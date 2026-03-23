@@ -1,6 +1,6 @@
 package com.blikeng.job.executor.worker;
 
-public class MathTask implements Runnable {
+public class AddNumbersTask implements Runnable {
     @Override
     public void run() {
         System.out.println("Pooled task is running...");

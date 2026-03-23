@@ -1,7 +1,7 @@
 package com.blikeng.job.executor.service;
 
 import com.blikeng.job.executor.worker.WorkerManager;
-import com.blikeng.job.executor.worker.MathTask;
+import com.blikeng.job.executor.worker.AddNumbersTask;
 import com.blikeng.job.executor.worker.StringTask;
 import org.springframework.stereotype.Service;
 
@@ -14,10 +14,10 @@ public class JobService {
     }
 
     public void doSomething(){
-        MathTask mathTask = new MathTask();
+        AddNumbersTask addNumbersTask = new AddNumbersTask();
         StringTask stringTask = new StringTask();
 
-        workerManager.submitTask(mathTask);
+        workerManager.submitTask(addNumbersTask);
         workerManager.submitTask(stringTask);
 
         workerManager.stopWorkers();
