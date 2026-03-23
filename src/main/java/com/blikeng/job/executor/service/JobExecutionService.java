@@ -23,7 +23,7 @@ public class JobExecutionService {
     }
 
     public void execute(UUID jobId) {
-        sleep(5000);
+        sleep();
 
         JobEntity job = jobRepository.findById(jobId)
             .orElseThrow(() -> {
@@ -70,12 +70,15 @@ public class JobExecutionService {
     private String handleCountWords(JobEntity job) {
         CountWordsPayload payload = objectMapper.readValue(job.getPayload(), CountWordsPayload.class);
 
-        return "OK";
+        String text = payload.words();
+        String[] words = text.split(" ");
+
+        return String.valueOf(words.length);
     }
 
-    private void sleep(long millis) {
+    private void sleep() {
         try {
-            Thread.sleep(millis);
+            Thread.sleep((long) 5000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

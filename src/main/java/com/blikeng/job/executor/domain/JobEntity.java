@@ -9,7 +9,7 @@ import java.util.UUID;
 @Table(name = "jobs")
 public class JobEntity {
     @Id
-    private UUID id = UUID.randomUUID();
+    private final UUID id = UUID.randomUUID();
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
