@@ -12,18 +12,27 @@ public class JobEntity {
     private UUID id = UUID.randomUUID();
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "type")
     private JobType jobType;
 
+    @Column(name = "payload")
     private String payload;
 
+    @Column(name = "result")
     private String result;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     private JobStatus jobStatus;
 
+    @Column(name = "created")
     private Instant jobCreated;
+
+    @Column(name = "started")
     private Instant jobStarted;
-    private Instant jobCompleted;
+
+    @Column(name = "finished")
+    private Instant jobFinished;
 
     protected JobEntity() {}
 
@@ -54,9 +63,12 @@ public class JobEntity {
     public void markJobFinished(String result) {
         this.jobStatus = JobStatus.COMPLETED;
 
-        this.jobCompleted = Instant.now();
-        if (result != null) {
-            this.result = result;
-        }
+        this.jobFinished = Instant.now();
+        this.result = result;
+    }
+
+    public void markJobFailed(String error) {
+        this.jobStatus = JobStatus.FAILED;
+        this.result = error;
     }
 }

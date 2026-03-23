@@ -1,0 +1,12 @@
+CREATE TABLE JOBS (
+    id UUID PRIMARY KEY,
+    type VARCHAR(127) NOT NULL
+        CHECK (type IN ('ADD_NUMBERS', 'COUNT_WORDS')),
+    payload TEXT NOT NULL,
+    result VARCHAR(255),
+    status VARCHAR(255) NOT NULL
+        CHECK (status IN ('QUEUED', 'RUNNING', 'COMPLETED', 'FAILED')),
+    created TIMESTAMP NOT NULL DEFAULT NOW(),
+    started TIMESTAMP,
+    finished TIMESTAMP
+);

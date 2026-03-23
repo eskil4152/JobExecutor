@@ -1,17 +1,22 @@
 package com.blikeng.job.executor.service;
 
 import com.blikeng.job.executor.domain.JobEntity;
+import com.blikeng.job.executor.payloads.AddNumbersPayload;
+import com.blikeng.job.executor.payloads.CountWordsPayload;
 import com.blikeng.job.executor.repository.JobRepository;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
 
 @Service
 public class JobExecutionService {
     private final JobRepository jobRepository;
+    private final ObjectMapper objectMapper;
 
-    public JobExecutionService(JobRepository jobRepository) {
+    public JobExecutionService(JobRepository jobRepository, ObjectMapper objectMapper) {
         this.jobRepository = jobRepository;
+        this.objectMapper = objectMapper;
     }
 
     public void execute(UUID jobId) {
@@ -19,8 +24,7 @@ public class JobExecutionService {
 
         sleep(5000);
 
-
-        /*JobEntity job = jobRepository.findById(jobId)
+        JobEntity job = jobRepository.findById(jobId)
             .orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
         job.markJobStarted();
@@ -39,11 +43,27 @@ public class JobExecutionService {
             jobRepository.save(job);
 
         } catch (Exception e) {
-            job.markJobFinished(e.getMessage());
+            job.markJobFailed(e.getMessage());
             jobRepository.save(job);
-        }*/
+        }
 
         System.out.println("Finished");
+    }
+
+    private String handleAddNumbers(JobEntity job) {
+        AddNumbersPayload payload = objectMapper.readValue(job.getPayload(), AddNumbersPayload.class);
+
+        sleep(5001);
+
+        return String.valueOf(payload.a() + payload.b());
+    }
+
+    private String handleCountWords(JobEntity job) {
+        CountWordsPayload payload = objectMapper.readValue(job.getPayload(), CountWordsPayload.class);
+
+        sleep(5002);
+
+        return "OK";
     }
 
     private void sleep(long millis) {
@@ -52,19 +72,5 @@ public class JobExecutionService {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-    }
-
-    private String handleAddNumbers(JobEntity job) {
-        String payload = job.getPayload();
-        sleep(5001);
-
-        return "OK";
-    }
-
-    private String handleCountWords(JobEntity job) {
-        String payload = job.getPayload();
-        sleep(5000);
-
-        return "OK";
     }
 }
