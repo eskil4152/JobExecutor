@@ -1,14 +1,12 @@
 package com.blikeng.job.executor.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Entity
+@Table(name = "jobs")
 public class JobEntity {
     @Id
     private UUID id = UUID.randomUUID();
@@ -34,6 +32,18 @@ public class JobEntity {
         this.payload = payload;
         this.jobStatus = JobStatus.QUEUED;
         this.jobCreated = Instant.now();
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public JobType getJobType() {
+        return jobType;
+    }
+
+    public String getPayload() {
+        return payload;
     }
 
     public void markJobStarted() {
