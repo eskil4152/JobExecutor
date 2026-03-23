@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/jobexecutordb}
+    username: ${SPRING_DATASOURCE_USERNAME:eskil}
+    password: ${SPRING_DATASOURCE_PASSWORD:password1}
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    database: postgresql
+    show-sql: 'true'
+    hibernate:
+      ddl-auto: none
+  web:
+    error:
+      include-message: always
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: never
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: Job Executor
+    description: Execute jobs
+    version: 0.1
+
+server:
+  port: ${PORT:8080}
