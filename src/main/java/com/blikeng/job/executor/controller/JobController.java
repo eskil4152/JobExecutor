@@ -5,7 +5,6 @@ import com.blikeng.job.executor.dto.JobResponseDTO;
 import com.blikeng.job.executor.service.JobService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
