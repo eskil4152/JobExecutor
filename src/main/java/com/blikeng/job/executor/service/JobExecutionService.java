@@ -1,25 +1,24 @@
 package com.blikeng.job.executor.service;
 
 import com.blikeng.job.executor.domain.JobEntity;
-import com.blikeng.job.executor.payloads.AddNumbersPayload;
-import com.blikeng.job.executor.payloads.CountWordsPayload;
+import com.blikeng.job.executor.handler.JobHandler;
 import com.blikeng.job.executor.repository.JobRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
 
 @Service
 public class JobExecutionService {
     private final JobRepository jobRepository;
-    private final ObjectMapper objectMapper;
+    private final JobHandler jobHandler;
+
     private final Logger logger = LoggerFactory.getLogger(JobExecutionService.class);
 
-    public JobExecutionService(JobRepository jobRepository, ObjectMapper objectMapper) {
+    public JobExecutionService(JobRepository jobRepository, JobHandler jobHandler) {
         this.jobRepository = jobRepository;
-        this.objectMapper = objectMapper;
+        this.jobHandler = jobHandler;
     }
 
     public void execute(UUID jobId) {
@@ -40,8 +39,8 @@ public class JobExecutionService {
             String result;
 
             switch (job.getJobType()) {
-                case ADD_NUMBERS -> result = handleAddNumbers(job);
-                case COUNT_WORDS -> result = handleCountWords(job);
+                case ADD_NUMBERS -> result = jobHandler.handleAddNumbers(job.getPayload());
+                case COUNT_WORDS -> result = jobHandler.handleCountWords(job.getPayload());
                 default -> {
                     logger.error("Job type {} not supported", job.getJobType());
                     throw new IllegalArgumentException("Job type not supported");
@@ -59,21 +58,6 @@ public class JobExecutionService {
         }
 
         logger.info("Finished job {} of type {}", jobId, job.getJobType());
-    }
-
-    private String handleAddNumbers(JobEntity job) {
-        AddNumbersPayload payload = objectMapper.readValue(job.getPayload(), AddNumbersPayload.class);
-
-        return String.valueOf(payload.a() + payload.b());
-    }
-
-    private String handleCountWords(JobEntity job) {
-        CountWordsPayload payload = objectMapper.readValue(job.getPayload(), CountWordsPayload.class);
-
-        String text = payload.words();
-        String[] words = text.split(" ");
-
-        return String.valueOf(words.length);
     }
 
     private void sleep() {
