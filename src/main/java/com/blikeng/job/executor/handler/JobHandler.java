@@ -8,6 +8,10 @@ import com.blikeng.job.executor.payloads.CountWordsPayload;
 import com.blikeng.job.executor.service.StorageService;
 import com.drew.imaging.ImageProcessingException;
 import org.apache.tika.exception.TikaException;
+import org.jaudiotagger.audio.exceptions.CannotReadException;
+import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
+import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
+import org.jaudiotagger.tag.TagException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -18,9 +22,6 @@ import tools.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.PosixFileAttributes;
-import java.util.HashMap;
 
 @Service
 public class JobHandler {
@@ -90,7 +91,16 @@ public class JobHandler {
                 ;
     }
 
-    public JsonNode handleMetadataExtraction(String payloadString) throws IOException, TikaException, ImageProcessingException {
+    public JsonNode handleMetadataExtraction(String payloadString) throws
+            IOException,
+            TikaException,
+            ImageProcessingException,
+            CannotReadException,
+            TagException,
+            InvalidAudioFrameException,
+            ReadOnlyFileException,
+            InterruptedException
+    {
         AnalyzeFilePayload payload;
 
         try {

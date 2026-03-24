@@ -7,6 +7,10 @@ import com.blikeng.job.executor.metadata.text.TextMetadataExtractor;
 import com.blikeng.job.executor.metadata.video.VideoMetadataExtractor;
 import com.drew.imaging.ImageProcessingException;
 import org.apache.tika.exception.TikaException;
+import org.jaudiotagger.audio.exceptions.CannotReadException;
+import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
+import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
+import org.jaudiotagger.tag.TagException;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
@@ -15,7 +19,16 @@ import java.nio.file.Path;
 
 public class FileTypeExtractor {
 
-    public static void findFileType(Path path, ObjectNode result) throws IOException, TikaException, ImageProcessingException {
+    public static void findFileType(Path path, ObjectNode result) throws
+            IOException,
+            TikaException,
+            ImageProcessingException,
+            InterruptedException,
+            CannotReadException,
+            TagException,
+            InvalidAudioFrameException,
+            ReadOnlyFileException
+    {
         String contentType = Files.probeContentType(path);
 
         if (contentType != null) {
