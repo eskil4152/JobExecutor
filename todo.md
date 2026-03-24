@@ -37,3 +37,16 @@ Tasks?
 23. AGGREGATE_DATA       → compute sums/averages
 24. EXTRACT_AUDIO        → pull audio from video file
 25. TRANSCODE_VIDEO      → simulate/perform format conversion
+
+
+
+1. ANALYZE_FILE       → size, line count, word count, extension
+2. HASH_FILE          → SHA-256 checksum
+3. SUMMARIZE_TEXT     → basic text stats
+4. VALIDATE_FILE      → empty file, too large, wrong extension
+5. EXTRACT_METADATA   → name, size, created/modified
+6. CONVERT_FILE       → txt → uppercase/lowercase copy, csv → json later
+7. COMPRESS_FILE      → zip/gzip output
+8. COUNT_LINES        → line count only
+9. SEARCH_IN_FILE     → count occurrences of a term
+10. DEDUP_LINES       → remove duplicate lines into new file

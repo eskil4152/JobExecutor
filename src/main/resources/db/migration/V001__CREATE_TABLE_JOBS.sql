@@ -1,7 +1,6 @@
 CREATE TABLE JOBS (
     id UUID PRIMARY KEY,
-    type VARCHAR(127) NOT NULL
-        CHECK (type IN ('ADD_NUMBERS', 'COUNT_WORDS')),
+    type VARCHAR(127) NOT NULL,
     payload TEXT NOT NULL,
     result VARCHAR(255),
     status VARCHAR(255) NOT NULL

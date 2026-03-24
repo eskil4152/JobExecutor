@@ -65,10 +65,16 @@ public class JobHandler {
 
         Path path = storageService.getPath(payload.fileId());
         String content = Files.readString(path);
+
         int words = content.trim().split("\\s+").length;
+        int bytes = content.getBytes().length;
+        int lines = content.split("\n").length;
+        int characters = content.length();
 
-        // More stuff
-
-        return "";
+        return "File Analysis:\n" +
+                "Words: " + words + "\n" +
+                "Bytes: " + bytes + "\n" +
+                "Lines: " + lines + "\n" +
+                "Characters: " + characters + "\n";
     }
 }
