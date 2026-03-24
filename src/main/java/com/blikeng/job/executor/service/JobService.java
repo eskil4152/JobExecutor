@@ -3,9 +3,13 @@ package com.blikeng.job.executor.service;
 import com.blikeng.job.executor.domain.JobEntity;
 import com.blikeng.job.executor.dto.JobDTO;
 import com.blikeng.job.executor.dto.JobResponseDTO;
+import com.blikeng.job.executor.exception.ApiException;
 import com.blikeng.job.executor.repository.JobRepository;
 import com.blikeng.job.executor.worker.JobTask;
 import com.blikeng.job.executor.worker.WorkerManager;
+import org.springframework.http.HttpStatus;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
@@ -31,15 +35,19 @@ public class JobService {
     }
 
     public UUID receiveTask(JobDTO jobDTO){
-        JobEntity job = new JobEntity(
-                jobDTO.jobType(),
-                objectMapper.writeValueAsString(jobDTO.payload()));
+        try {
+            JobEntity job = new JobEntity(
+                    jobDTO.jobType(),
+                    objectMapper.writeValueAsString(jobDTO.payload())
+            );
 
-        jobRepository.save(job);
+            jobRepository.save(job);
+            workerManager.submitTask(new JobTask(job.getId(), jobExecutionService));
 
-        workerManager.submitTask(new JobTask(job.getId(), jobExecutionService));
-
-        return job.getId();
+            return job.getId();
+        } catch (JacksonException e) {
+            throw new ApiException("Failed to create job from request payload", HttpStatus.BAD_REQUEST);
+        }
     }
 
     public JobResponseDTO getJob(String id){
@@ -48,24 +56,28 @@ public class JobService {
         try {
             uuid = UUID.fromString(id);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid job id");
+            throw new ApiException("Passed ID was not valid UUID", HttpStatus.BAD_REQUEST);
         }
 
-        JobEntity job = jobRepository.findById(uuid).orElse(null);
+        JobEntity job = jobRepository.findById(uuid)
+                .orElseThrow(() -> new ApiException("Requested job was not found", HttpStatus.NOT_FOUND));
 
-        if (job == null) {
-            throw new IllegalArgumentException("Job not found");
+        try {
+            String payloadTemp = job.getPayload();
+            String resultTemp = job.getResult();
+
+            return new JobResponseDTO(
+                    id,
+                    job.getJobType(),
+                    payloadTemp != null ? objectMapper.readTree(payloadTemp) : null,
+                    resultTemp != null ? objectMapper.readTree(resultTemp) : null,
+                    job.getJobStatus(),
+                    job.getJobCreated(),
+                    job.getJobStarted(),
+                    job.getJobFinished()
+            );
+        } catch (JacksonException e) {
+            throw new ApiException("Failed to read stored job data", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new JobResponseDTO(
-                id,
-                job.getJobType(),
-                objectMapper.readTree(job.getPayload()),
-                objectMapper.readTree(job.getResult()),
-                job.getJobStatus(),
-                job.getJobCreated(),
-                job.getJobStarted(),
-                job.getJobFinished()
-        );
     }
 }

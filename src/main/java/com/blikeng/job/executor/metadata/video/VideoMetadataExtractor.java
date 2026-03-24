@@ -20,11 +20,20 @@ public class VideoMetadataExtractor {
             ProcessBuilder processBuilder = extractVideoData(path);
 
             Process process = processBuilder.start();
+
             String output = new String(process.getInputStream().readAllBytes());
+            String error = new String(process.getErrorStream().readAllBytes());
 
             int code = process.waitFor();
+
             if (code != 0) {
-                throw new RuntimeException("Error extracting video metadata");
+                error = error.isBlank() ? "no error output" : error.trim();
+
+                throw new MetadataException(
+                        "ffprobe failed (exit=" + code + "): " + error,
+                        "VideoMetadataExtractor.extract",
+                        new RuntimeException(error)
+                );
             }
 
             JsonNode probeResult = objectMapper.readTree(output);
