@@ -30,8 +30,6 @@ public class JobExecutionService {
     }
 
     public void execute(UUID jobId) {
-        sleep();
-
         JobEntity job = jobRepository.findById(jobId)
             .orElseThrow(() -> {
                 logger.error("Job {} not found", jobId);
@@ -82,13 +80,5 @@ public class JobExecutionService {
         }
 
         logger.info("Finished job {} of type {}", jobId, job.getJobType());
-    }
-
-    private void sleep() {
-        try {
-            Thread.sleep((long) 5000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
     }
 }
