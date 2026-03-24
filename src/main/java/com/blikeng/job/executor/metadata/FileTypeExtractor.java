@@ -13,22 +13,21 @@ import java.nio.file.Path;
 
 public class FileTypeExtractor {
 
-    public static ObjectNode findFileType(Path path) throws IOException {
+    public static void findFileType(Path path, ObjectNode result) throws IOException {
         String contentType = Files.probeContentType(path);
+
         if (contentType != null) {
             String[] parts = contentType.split("/");
             String fileType = parts.length > 0 ? parts[0] : "unknown";
 
-            return switch (fileType) {
-                case "text" -> TextMetadataExtractor.extract(path);
-                case "application" -> ApplicationMetadataExtractor.extract(path);
-                case "image" -> ImageMetadataExtractor.extract(path);
-                case "video" -> VideoMetadataExtractor.extract(path);
-                case "audio" -> AudioMetadataExtractor.extract(path);
-                default -> new ObjectNode(null);
-            };
+            switch (fileType) {
+                case "text" -> TextMetadataExtractor.extract(path, result);
+                case "application" -> ApplicationMetadataExtractor.extract(path, result);
+                case "image" -> ImageMetadataExtractor.extract(path, result);
+                case "video" -> VideoMetadataExtractor.extract(path, result);
+                case "audio" -> AudioMetadataExtractor.extract(path, result);
+                default -> {}
+            }
         }
-
-        return new ObjectNode(null);
     }
 }

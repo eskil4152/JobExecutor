@@ -10,24 +10,18 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFileAttributes;
 
 public class GeneralMetadata {
-    public static final ObjectMapper objectMapper = new ObjectMapper();
-
-    public static ObjectNode getGeneralData(Path path) throws IOException {
-        ObjectNode result = objectMapper.createObjectNode();
-
+    public static void getGeneralData(Path path, ObjectNode current) throws IOException {
         BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
         PosixFileAttributes posixAttributes = Files.readAttributes(path, PosixFileAttributes.class);
 
-        result.put("name", path.getFileName().toString());
-        result.put("size", attributes.size());
-        result.put("lastModified", attributes.lastModifiedTime().toMillis());
-        result.put("created", attributes.creationTime().toMillis());
-        result.put("accessed", attributes.lastAccessTime().toMillis());
-        result.put("isSymbolicLink", attributes.isSymbolicLink());
+        current.put("name", path.getFileName().toString());
+        current.put("size", attributes.size());
+        current.put("lastModified", attributes.lastModifiedTime().toMillis());
+        current.put("created", attributes.creationTime().toMillis());
+        current.put("accessed", attributes.lastAccessTime().toMillis());
+        current.put("isSymbolicLink", attributes.isSymbolicLink());
 
-        result.put("owner", posixAttributes.owner().getName());
-        result.put("group", posixAttributes.group().getName());
-
-        return result;
+        current.put("owner", posixAttributes.owner().getName());
+        current.put("group", posixAttributes.group().getName());
     }
 }

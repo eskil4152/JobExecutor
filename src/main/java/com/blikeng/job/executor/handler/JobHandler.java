@@ -101,11 +101,8 @@ public class JobHandler {
         Path path = storageService.getPath(payload.fileId());
         ObjectNode result = objectMapper.createObjectNode();
 
-        ObjectNode generalMetadata = GeneralMetadata.getGeneralData(path);
-        result.setAll(generalMetadata);
-
-        ObjectNode detailedMetadata = FileTypeExtractor.findFileType(path);
-        result.setAll(detailedMetadata);
+        GeneralMetadata.getGeneralData(path, result);
+        FileTypeExtractor.findFileType(path, result);
 
         return result;
     }
