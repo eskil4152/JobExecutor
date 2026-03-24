@@ -5,6 +5,7 @@ import com.blikeng.job.executor.metadata.audio.AudioMetadataExtractor;
 import com.blikeng.job.executor.metadata.image.ImageMetadataExtractor;
 import com.blikeng.job.executor.metadata.text.TextMetadataExtractor;
 import com.blikeng.job.executor.metadata.video.VideoMetadataExtractor;
+import com.drew.imaging.ImageProcessingException;
 import org.apache.tika.exception.TikaException;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -14,7 +15,7 @@ import java.nio.file.Path;
 
 public class FileTypeExtractor {
 
-    public static void findFileType(Path path, ObjectNode result) throws IOException, TikaException {
+    public static void findFileType(Path path, ObjectNode result) throws IOException, TikaException, ImageProcessingException {
         String contentType = Files.probeContentType(path);
 
         if (contentType != null) {

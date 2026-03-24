@@ -39,13 +39,14 @@ public class JobExecutionService {
         job.markJobStarted();
         jobRepository.save(job);
 
-        try {
-            JsonNode result;
+        JsonNode result;
 
+        try {
             switch (job.getJobType()) {
                 case ADD_NUMBERS -> result = jobHandler.handleAddNumbers(job.getPayload());
                 case COUNT_WORDS -> result = jobHandler.handleCountWords(job.getPayload());
                 case ANALYZE_FILE -> result = jobHandler.handleFileAnalysis(job.getPayload());
+                case EXTRACT_METADATA -> result = jobHandler.handleMetadataExtraction(job.getPayload());
                 default -> {
                     logger.error("Job type {} not supported", job.getJobType());
                     throw new IllegalArgumentException("Job type not supported");

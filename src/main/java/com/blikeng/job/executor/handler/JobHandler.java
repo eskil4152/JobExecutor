@@ -6,6 +6,8 @@ import com.blikeng.job.executor.payloads.AddNumbersPayload;
 import com.blikeng.job.executor.payloads.AnalyzeFilePayload;
 import com.blikeng.job.executor.payloads.CountWordsPayload;
 import com.blikeng.job.executor.service.StorageService;
+import com.drew.imaging.ImageProcessingException;
+import org.apache.tika.exception.TikaException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -88,7 +90,7 @@ public class JobHandler {
                 ;
     }
 
-    public JsonNode handleMetadataExtraction(String payloadString) throws IOException {
+    public JsonNode handleMetadataExtraction(String payloadString) throws IOException, TikaException, ImageProcessingException {
         AnalyzeFilePayload payload;
 
         try {
