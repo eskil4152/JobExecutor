@@ -1,5 +1,6 @@
 package com.blikeng.job.executor.handler;
 
+import com.blikeng.job.executor.metadata.FileTypeExtractor;
 import com.blikeng.job.executor.payloads.AddNumbersPayload;
 import com.blikeng.job.executor.payloads.AnalyzeFilePayload;
 import com.blikeng.job.executor.payloads.CountWordsPayload;
@@ -14,6 +15,9 @@ import tools.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.PosixFileAttributes;
+import java.util.HashMap;
 
 @Service
 public class JobHandler {
@@ -81,5 +85,40 @@ public class JobHandler {
                     .put("lines", lines)
                     .put("characters", characters)
                 ;
+    }
+
+    public JsonNode handleMetadataExtraction(String payloadString) throws IOException {
+        AnalyzeFilePayload payload;
+
+        try {
+            payload = objectMapper.readValue(payloadString, AnalyzeFilePayload.class);
+        } catch (Exception e) {
+            logger.error("Unable to read payload for Metadata Extraction: {}", payloadString);
+            throw new RuntimeException("Invalid payload");
+        }
+
+        Path path = storageService.getPath(payload.fileId());
+        BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
+        PosixFileAttributes posixAttributes = Files.readAttributes(path, PosixFileAttributes.class);
+
+        ObjectNode result = objectMapper.createObjectNode();
+        result.put("name", path.getFileName().toString());
+        result.put("size", attributes.size());
+        result.put("lastModified", attributes.lastModifiedTime().toMillis());
+        result.put("created", attributes.creationTime().toMillis());
+        result.put("accessed", attributes.lastAccessTime().toMillis());
+        result.put("isRegularFile", attributes.isRegularFile());
+        result.put("isDirectory", attributes.isDirectory());
+        result.put("isSymbolicLink", attributes.isSymbolicLink());
+
+        result.put("owner", posixAttributes.owner().getName());
+        result.put("group", posixAttributes.group().getName());
+
+        HashMap<String, String> detailedMetadata = FileTypeExtractor.findFileType(path);
+        for (String key : detailedMetadata.keySet()) {
+            result.put(key, detailedMetadata.get(key));
+        }
+
+        return result;
     }
 }

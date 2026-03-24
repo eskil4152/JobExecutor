@@ -7,10 +7,7 @@ Pipelines:
 * Job Status Fetching:
   * JobController -> JobService -> JobRepository
     
-
-Need proper error handling, not just throws. Especially for user response. 
-
-
+  
 Tasks? 
 1. FETCH_URL             → fetch URL, return status and size
 2. HASH_TEXT             → hash string (SHA-256)
