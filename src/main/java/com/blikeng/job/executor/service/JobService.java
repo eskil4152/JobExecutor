@@ -60,8 +60,8 @@ public class JobService {
         return new JobResponseDTO(
                 id,
                 job.getJobType(),
-                job.getPayload(),
-                job.getResult(),
+                objectMapper.readTree(job.getPayload()),
+                objectMapper.readTree(job.getResult()),
                 job.getJobStatus(),
                 job.getJobCreated(),
                 job.getJobStarted(),

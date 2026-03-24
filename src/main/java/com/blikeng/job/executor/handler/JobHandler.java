@@ -7,7 +7,9 @@ import com.blikeng.job.executor.service.StorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,7 +26,7 @@ public class JobHandler {
         this.storageService = storageService;
     }
 
-    public String handleCountWords(String payloadString) {
+    public JsonNode handleCountWords(String payloadString) {
         CountWordsPayload payload;
 
         try {
@@ -37,10 +39,11 @@ public class JobHandler {
         String text = payload.words();
         String[] words = text.trim().split("\\s+");
 
-        return "Total words: " + words.length;
+        return objectMapper.createObjectNode()
+                .put("words", words.length);
     }
 
-    public String handleAddNumbers(String payloadString) {
+    public JsonNode handleAddNumbers(String payloadString) {
         AddNumbersPayload payload;
 
         try {
@@ -50,10 +53,11 @@ public class JobHandler {
             throw new RuntimeException("Invalid payload");
         }
 
-        return "Sum = " + (payload.a() + payload.b());
+        return objectMapper.createObjectNode()
+                .put("sum", payload.a() + payload.b());
     }
 
-    public String handleFileAnalysis(String payloadString) throws IOException {
+    public JsonNode handleFileAnalysis(String payloadString) throws IOException {
         AnalyzeFilePayload payload;
 
         try {
@@ -71,10 +75,11 @@ public class JobHandler {
         int lines = content.split("\n").length;
         int characters = content.length();
 
-        return "File Analysis:\n" +
-                "Words: " + words + "\n" +
-                "Bytes: " + bytes + "\n" +
-                "Lines: " + lines + "\n" +
-                "Characters: " + characters + "\n";
+        return objectMapper.createObjectNode()
+                    .put("words", words)
+                    .put("bytes", bytes)
+                    .put("lines", lines)
+                    .put("characters", characters)
+                ;
     }
 }

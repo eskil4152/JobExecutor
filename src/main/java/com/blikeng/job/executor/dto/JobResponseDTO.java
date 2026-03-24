@@ -2,14 +2,15 @@ package com.blikeng.job.executor.dto;
 
 import com.blikeng.job.executor.domain.JobStatus;
 import com.blikeng.job.executor.domain.JobType;
+import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
 
 public class JobResponseDTO {
     private String jobId;
     private JobType jobType;
-    private String payload;
-    private String result;
+    private JsonNode payload;
+    private JsonNode result;
     private JobStatus jobStatus;
     private Instant jobCreated;
     private Instant jobStarted;
@@ -18,8 +19,8 @@ public class JobResponseDTO {
     public JobResponseDTO(
             String jobId,
             JobType jobType,
-            String payload,
-            String result,
+            JsonNode payload,
+            JsonNode result,
             JobStatus jobStatus,
             Instant jobCreated,
             Instant jobStarted,
@@ -43,11 +44,11 @@ public class JobResponseDTO {
         return jobType;
     }
 
-    public String getPayload() {
+    public JsonNode getPayload() {
         return payload;
     }
 
-    public String getResult() {
+    public JsonNode getResult() {
         return result;
     }
 

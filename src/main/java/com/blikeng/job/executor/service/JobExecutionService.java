@@ -6,6 +6,8 @@ import com.blikeng.job.executor.repository.JobRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
 
@@ -15,10 +17,12 @@ public class JobExecutionService {
     private final JobHandler jobHandler;
 
     private final Logger logger = LoggerFactory.getLogger(JobExecutionService.class);
+    private final ObjectMapper objectMapper;
 
-    public JobExecutionService(JobRepository jobRepository, JobHandler jobHandler) {
+    public JobExecutionService(JobRepository jobRepository, JobHandler jobHandler, ObjectMapper objectMapper) {
         this.jobRepository = jobRepository;
         this.jobHandler = jobHandler;
+        this.objectMapper = objectMapper;
     }
 
     public void execute(UUID jobId) {
@@ -36,7 +40,7 @@ public class JobExecutionService {
         jobRepository.save(job);
 
         try {
-            String result;
+            JsonNode result;
 
             switch (job.getJobType()) {
                 case ADD_NUMBERS -> result = jobHandler.handleAddNumbers(job.getPayload());
@@ -48,7 +52,9 @@ public class JobExecutionService {
                 }
             }
 
-            job.markJobFinished(result);
+            String resultString = objectMapper.writeValueAsString(result);
+
+            job.markJobFinished(resultString);
             jobRepository.save(job);
 
         } catch (Exception e) {
