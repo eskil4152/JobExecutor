@@ -1,27 +1,29 @@
 package com.blikeng.job.executor.metadata.audio;
 
+import com.blikeng.job.executor.exception.MetadataException;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.AudioHeader;
-import org.jaudiotagger.audio.exceptions.CannotReadException;
-import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
-import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
-import org.jaudiotagger.tag.TagException;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 
 public class AudioMetadataExtractor {
-    public static void extract(Path path, ObjectNode result) throws CannotReadException, TagException, InvalidAudioFrameException, ReadOnlyFileException, IOException {
+    public static void extract(Path path, ObjectNode result) {
         File file = path.toFile();
         result.put("category", "audio");
         result.put("fileSize", file.length());
 
-        AudioFile audioFile = AudioFileIO.read(file);
+        AudioFile audioFile;
+
+        try {
+            audioFile = AudioFileIO.read(file);
+        } catch (Exception e) {
+            throw new MetadataException("Failed to read audio file", "AudioMetadataExtractor.extract", e);
+        }
 
         Tag tag = audioFile.getTag();
         if (tag != null) {
@@ -37,7 +39,6 @@ public class AudioMetadataExtractor {
             result.put("recordLabel", tag.getFirst(FieldKey.RECORD_LABEL));
             result.put("rating", tag.getFirst(FieldKey.RATING));
             result.put("barcode", tag.getFirst(FieldKey.BARCODE));
-            result.put("music_brainz_id", tag.getFirst(FieldKey.MUSICIP_ID));
         }
 
         AudioHeader header = audioFile.getAudioHeader();

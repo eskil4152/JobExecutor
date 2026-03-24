@@ -1,19 +1,13 @@
 package com.blikeng.job.executor.handler;
 
+import com.blikeng.job.executor.exception.FileProcessingException;
+import com.blikeng.job.executor.exception.InvalidPayloadException;
 import com.blikeng.job.executor.metadata.FileTypeExtractor;
 import com.blikeng.job.executor.metadata.GeneralMetadata;
 import com.blikeng.job.executor.payloads.AddNumbersPayload;
-import com.blikeng.job.executor.payloads.AnalyzeFilePayload;
+import com.blikeng.job.executor.payloads.FilePayload;
 import com.blikeng.job.executor.payloads.CountWordsPayload;
 import com.blikeng.job.executor.service.StorageService;
-import com.drew.imaging.ImageProcessingException;
-import org.apache.tika.exception.TikaException;
-import org.jaudiotagger.audio.exceptions.CannotReadException;
-import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
-import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
-import org.jaudiotagger.tag.TagException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -26,7 +20,6 @@ import java.nio.file.Path;
 @Service
 public class JobHandler {
     private final ObjectMapper objectMapper;
-    private static final Logger logger = LoggerFactory.getLogger(JobHandler.class);
     private final StorageService storageService;
 
     public JobHandler(ObjectMapper objectMapper, StorageService storageService) {
@@ -40,8 +33,7 @@ public class JobHandler {
         try {
             payload = objectMapper.readValue(payloadString, CountWordsPayload.class);
         } catch (Exception e) {
-            logger.error("Unable to read payload for CountWords: {}", payloadString);
-            throw new RuntimeException("Invalid payload");
+            throw new InvalidPayloadException("Invalid payload at CountWords", e);
         }
 
         String text = payload.words();
@@ -57,57 +49,49 @@ public class JobHandler {
         try {
              payload = objectMapper.readValue(payloadString, AddNumbersPayload.class);
         } catch (Exception e) {
-            logger.error("Unable to read payload for AddNumbers: {}", payloadString);
-            throw new RuntimeException("Invalid payload");
+            throw new InvalidPayloadException("Unable to read payload for Add Numbers", e);
         }
 
         return objectMapper.createObjectNode()
                 .put("sum", payload.a() + payload.b());
     }
 
-    public JsonNode handleFileAnalysis(String payloadString) throws IOException {
-        AnalyzeFilePayload payload;
+    public JsonNode handleFileAnalysis(String payloadString) {
+        FilePayload payload;
 
         try {
-            payload = objectMapper.readValue(payloadString, AnalyzeFilePayload.class);
+            payload = objectMapper.readValue(payloadString, FilePayload.class);
         } catch (Exception e) {
-            logger.error("Unable to read payload for FileAnalysis: {}", payloadString);
-            throw new RuntimeException("Invalid payload");
+            throw new InvalidPayloadException("Unable to read payload for File Analysis", e);
         }
 
-        Path path = storageService.getPath(payload.fileId());
-        String content = Files.readString(path);
+        try {
+            Path path = storageService.getPath(payload.fileId());
+            String content = Files.readString(path);
 
-        int words = content.trim().split("\\s+").length;
-        int bytes = content.getBytes().length;
-        int lines = content.split("\n").length;
-        int characters = content.length();
+            int words = content.trim().split("\\s+").length;
+            int bytes = content.getBytes().length;
+            int lines = content.split("\n").length;
+            int characters = content.length();
 
-        return objectMapper.createObjectNode()
+            return objectMapper.createObjectNode()
                     .put("words", words)
                     .put("bytes", bytes)
                     .put("lines", lines)
                     .put("characters", characters)
-                ;
+                    ;
+        } catch (IOException e) {
+            throw new FileProcessingException("Unable to read file for File Analysis", e);
+        }
     }
 
-    public JsonNode handleMetadataExtraction(String payloadString) throws
-            IOException,
-            TikaException,
-            ImageProcessingException,
-            CannotReadException,
-            TagException,
-            InvalidAudioFrameException,
-            ReadOnlyFileException,
-            InterruptedException
-    {
-        AnalyzeFilePayload payload;
+    public JsonNode handleMetadataExtraction(String payloadString) {
+        FilePayload payload;
 
         try {
-            payload = objectMapper.readValue(payloadString, AnalyzeFilePayload.class);
+            payload = objectMapper.readValue(payloadString, FilePayload.class);
         } catch (Exception e) {
-            logger.error("Unable to read payload for Metadata Extraction: {}", payloadString);
-            throw new RuntimeException("Invalid payload");
+            throw new InvalidPayloadException("Invalid payload for Metadata Extraction", e);
         }
 
         Path path = storageService.getPath(payload.fileId());

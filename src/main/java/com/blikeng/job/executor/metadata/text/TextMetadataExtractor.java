@@ -1,5 +1,6 @@
 package com.blikeng.job.executor.metadata.text;
 
+import com.blikeng.job.executor.exception.MetadataException;
 import org.apache.tika.Tika;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -15,9 +16,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class TextMetadataExtractor {
-    public static void extract(Path path, ObjectNode result) throws TikaException, IOException {
+    public static void extract(Path path, ObjectNode result) {
         Tika tika = new Tika();
-        String content = tika.parseToString(path);
+        String content;
+
+        try {
+             content = tika.parseToString(path);
+        } catch (IOException | TikaException e) {
+            throw new MetadataException("Failed to read file", "TextMetadataExtractor.extract", e);
+        }
 
         result.put("category", "text");
         result.put("characters", content.length());
@@ -30,7 +37,7 @@ public class TextMetadataExtractor {
         try (InputStream stream = Files.newInputStream(path)) {
             parser.parse(stream, new BodyContentHandler(), metadata, new ParseContext());
         } catch (Exception e) {
-            throw new RuntimeException("Error parsing file", e);
+            throw new MetadataException("Failed to parse text metadata", "TextMetadataExtractor.extract", e);
         }
 
         for (String name : metadata.names()) {

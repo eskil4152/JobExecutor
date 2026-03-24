@@ -1,6 +1,10 @@
 package com.blikeng.job.executor.service;
 
 import com.blikeng.job.executor.domain.JobEntity;
+import com.blikeng.job.executor.exception.FileProcessingException;
+import com.blikeng.job.executor.exception.InvalidPayloadException;
+import com.blikeng.job.executor.exception.JobException;
+import com.blikeng.job.executor.exception.MetadataException;
 import com.blikeng.job.executor.handler.JobHandler;
 import com.blikeng.job.executor.repository.JobRepository;
 import org.slf4j.Logger;
@@ -31,7 +35,7 @@ public class JobExecutionService {
         JobEntity job = jobRepository.findById(jobId)
             .orElseThrow(() -> {
                 logger.error("Job {} not found", jobId);
-                return new IllegalArgumentException("Job not found");
+                return new JobException("Job not found", jobId.toString());
             });
 
         logger.info("Executing job {} of type {}", jobId, job.getJobType());
@@ -49,7 +53,7 @@ public class JobExecutionService {
                 case EXTRACT_METADATA -> result = jobHandler.handleMetadataExtraction(job.getPayload());
                 default -> {
                     logger.error("Job type {} not supported", job.getJobType());
-                    throw new IllegalArgumentException("Job type not supported");
+                    throw new JobException("Job type not supported", null);
                 }
             }
 
@@ -58,11 +62,23 @@ public class JobExecutionService {
             job.markJobFinished(resultString);
             jobRepository.save(job);
 
-        } catch (Exception e) {
-            job.markJobFailed("Job failed, please try again later.");
+        } catch (MetadataException e) {
+            job.markJobFailed("Failed to extract metadata");
             jobRepository.save(job);
 
-            logger.error("Job {} of type {} failed", jobId, job.getJobType(), e);
+            logger.error("Job {} metadata extraction failure at {}: {}", jobId, e.getLocation(), e.getMessage(), e);
+
+        } catch (InvalidPayloadException e) {
+            job.markJobFailed("Invalid payload");
+            jobRepository.save(job);
+
+            logger.error("Job {} invalid payload: {}", jobId, e.getMessage(), e);
+
+        } catch (FileProcessingException e) {
+            job.markJobFailed("Failed to process file");
+            jobRepository.save(job);
+
+            logger.error("Job {} file processing failure: {}", jobId, e.getMessage(), e);
         }
 
         logger.info("Finished job {} of type {}", jobId, job.getJobType());

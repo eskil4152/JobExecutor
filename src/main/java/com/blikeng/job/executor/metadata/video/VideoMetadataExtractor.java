@@ -1,5 +1,6 @@
 package com.blikeng.job.executor.metadata.video;
 
+import com.blikeng.job.executor.exception.MetadataException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
@@ -11,47 +12,53 @@ import java.util.Map;
 public class VideoMetadataExtractor {
     private final static ObjectMapper objectMapper = new ObjectMapper();
 
-    public static void extract(Path path, ObjectNode result) throws IOException, InterruptedException {
-        result.put("category", "video");
-        result.put("fileSize", path.toFile().length());
+    public static void extract(Path path, ObjectNode result) {
+        try {
+            result.put("category", "video");
+            result.put("fileSize", path.toFile().length());
 
-        ProcessBuilder processBuilder = extractVideoData(path);
+            ProcessBuilder processBuilder = extractVideoData(path);
 
-        Process process = processBuilder.start();
-        String output = new String(process.getInputStream().readAllBytes());
+            Process process = processBuilder.start();
+            String output = new String(process.getInputStream().readAllBytes());
 
-        int code = process.waitFor();
-        if (code != 0) {
-            throw new RuntimeException("Error extracting video metadata");
-        }
+            int code = process.waitFor();
+            if (code != 0) {
+                throw new RuntimeException("Error extracting video metadata");
+            }
 
-        JsonNode probeResult = objectMapper.readTree(output);
+            JsonNode probeResult = objectMapper.readTree(output);
 
-        JsonNode format = probeResult.get("format");
-        JsonNode streams = probeResult.get("streams");
+            JsonNode format = probeResult.get("format");
+            JsonNode streams = probeResult.get("streams");
 
-        if (format != null) {
-            copyFields(format, result, FORMAT_FIELDS);
-        }
+            if (format != null) {
+                copyFields(format, result, FORMAT_FIELDS);
+            }
 
-        if (streams != null && streams.isArray()) {
-            for (JsonNode stream : streams) {
-                if (!stream.has("codec_type")) {
-                    continue;
-                }
+            if (streams != null && streams.isArray()) {
+                for (JsonNode stream : streams) {
+                    if (!stream.has("codec_type")) {
+                        continue;
+                    }
 
-                String type = stream.get("codec_type").asString();
+                    String type = stream.get("codec_type").asString();
 
-                if ("video".equals(type)) {
-                    copyFields(stream, result, VIDEO_FIELDS);
-                } else if ("audio".equals(type)) {
-                    copyFields(stream, result, AUDIO_FIELDS);
+                    if ("video".equals(type)) {
+                        copyFields(stream, result, VIDEO_FIELDS);
+                    } else if ("audio".equals(type)) {
+                        copyFields(stream, result, AUDIO_FIELDS);
+                    }
                 }
             }
+        } catch (IOException exception) {
+            throw new MetadataException("Error reading video metadata", "VideoMetadataExtractor.extract", exception);
+        } catch (InterruptedException exception) {
+            throw new MetadataException("Metadata extraction interrupted", "VideoMetadataExtractor.extract", exception);
         }
     }
 
-    private static ProcessBuilder extractVideoData(Path path){
+    private static ProcessBuilder extractVideoData(Path path) {
         return new ProcessBuilder(
                 "ffprobe",
                 "-v", "quiet",
