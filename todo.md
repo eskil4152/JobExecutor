@@ -8,5 +8,4 @@ Pipelines:
   * JobController -> JobService -> JobRepository
     
 
-Create predetermined task types
-Create dummy workers for each type
+Need proper error handling, not just throws. Especially for user response. 

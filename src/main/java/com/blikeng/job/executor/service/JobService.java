@@ -2,6 +2,7 @@ package com.blikeng.job.executor.service;
 
 import com.blikeng.job.executor.domain.JobEntity;
 import com.blikeng.job.executor.dto.JobDTO;
+import com.blikeng.job.executor.dto.JobResponseDTO;
 import com.blikeng.job.executor.repository.JobRepository;
 import com.blikeng.job.executor.worker.JobTask;
 import com.blikeng.job.executor.worker.WorkerManager;
@@ -39,5 +40,32 @@ public class JobService {
         workerManager.submitTask(new JobTask(job.getId(), jobExecutionService));
 
         return job.getId();
+    }
+
+    public JobResponseDTO getJob(String id){
+        UUID uuid;
+
+        try {
+            uuid = UUID.fromString(id);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid job id");
+        }
+
+        JobEntity job = jobRepository.findById(uuid).orElse(null);
+
+        if (job == null) {
+            throw new IllegalArgumentException("Job not found");
+        }
+
+        return new JobResponseDTO(
+                id,
+                job.getJobType(),
+                job.getPayload(),
+                job.getResult(),
+                job.getJobStatus(),
+                job.getJobCreated(),
+                job.getJobStarted(),
+                job.getJobFinished()
+        );
     }
 }

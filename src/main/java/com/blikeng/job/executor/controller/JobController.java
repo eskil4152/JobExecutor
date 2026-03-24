@@ -1,6 +1,7 @@
 package com.blikeng.job.executor.controller;
 
 import com.blikeng.job.executor.dto.JobDTO;
+import com.blikeng.job.executor.dto.JobResponseDTO;
 import com.blikeng.job.executor.service.JobService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,9 +28,11 @@ public class JobController {
     }
 
     @GetMapping("/job/{id}")
-    public ResponseEntity<String> getJob(
+    public ResponseEntity<JobResponseDTO> getJob(
             @PathVariable String id
     ){
-        return ResponseEntity.ok().body("Got job with id " + id);
+        JobResponseDTO dto = jobService.getJob(id);
+
+        return ResponseEntity.ok().body(dto);
     }
 }

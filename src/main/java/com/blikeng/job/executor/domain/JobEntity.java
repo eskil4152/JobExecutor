@@ -55,6 +55,26 @@ public class JobEntity {
         return payload;
     }
 
+    public String getResult() {
+        return result;
+    }
+
+    public JobStatus getJobStatus() {
+        return jobStatus;
+    }
+
+    public Instant getJobCreated() {
+        return jobCreated;
+    }
+
+    public Instant getJobStarted() {
+        return jobStarted;
+    }
+
+    public Instant getJobFinished() {
+        return jobFinished;
+    }
+
     public void markJobStarted() {
         this.jobStatus = JobStatus.RUNNING;
         this.jobStarted = Instant.now();
