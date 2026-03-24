@@ -1,6 +1,7 @@
 package com.blikeng.job.executor.handler;
 
 import com.blikeng.job.executor.metadata.FileTypeExtractor;
+import com.blikeng.job.executor.metadata.GeneralMetadata;
 import com.blikeng.job.executor.payloads.AddNumbersPayload;
 import com.blikeng.job.executor.payloads.AnalyzeFilePayload;
 import com.blikeng.job.executor.payloads.CountWordsPayload;
@@ -98,26 +99,13 @@ public class JobHandler {
         }
 
         Path path = storageService.getPath(payload.fileId());
-        BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
-        PosixFileAttributes posixAttributes = Files.readAttributes(path, PosixFileAttributes.class);
-
         ObjectNode result = objectMapper.createObjectNode();
-        result.put("name", path.getFileName().toString());
-        result.put("size", attributes.size());
-        result.put("lastModified", attributes.lastModifiedTime().toMillis());
-        result.put("created", attributes.creationTime().toMillis());
-        result.put("accessed", attributes.lastAccessTime().toMillis());
-        result.put("isRegularFile", attributes.isRegularFile());
-        result.put("isDirectory", attributes.isDirectory());
-        result.put("isSymbolicLink", attributes.isSymbolicLink());
 
-        result.put("owner", posixAttributes.owner().getName());
-        result.put("group", posixAttributes.group().getName());
+        ObjectNode generalMetadata = GeneralMetadata.getGeneralData(path);
+        result.setAll(generalMetadata);
 
-        HashMap<String, String> detailedMetadata = FileTypeExtractor.findFileType(path);
-        for (String key : detailedMetadata.keySet()) {
-            result.put(key, detailedMetadata.get(key));
-        }
+        ObjectNode detailedMetadata = FileTypeExtractor.findFileType(path);
+        result.setAll(detailedMetadata);
 
         return result;
     }
