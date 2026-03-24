@@ -5,6 +5,7 @@ import com.blikeng.job.executor.dto.JobResponseDTO;
 import com.blikeng.job.executor.service.JobService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -20,7 +21,7 @@ public class JobController {
     @PostMapping("/job")
     public ResponseEntity<String> createJob(
             @RequestBody JobDTO jobDTO
-            ) {
+        ){
 
         UUID id = jobService.receiveTask(jobDTO);
 

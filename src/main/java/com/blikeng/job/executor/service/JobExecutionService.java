@@ -41,6 +41,7 @@ public class JobExecutionService {
             switch (job.getJobType()) {
                 case ADD_NUMBERS -> result = jobHandler.handleAddNumbers(job.getPayload());
                 case COUNT_WORDS -> result = jobHandler.handleCountWords(job.getPayload());
+                case ANALYZE_FILE -> result = jobHandler.handleFileAnalysis(job.getPayload());
                 default -> {
                     logger.error("Job type {} not supported", job.getJobType());
                     throw new IllegalArgumentException("Job type not supported");
