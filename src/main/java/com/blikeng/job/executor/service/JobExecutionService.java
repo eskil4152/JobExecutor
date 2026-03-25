@@ -48,6 +48,7 @@ public class JobExecutionService {
                 case EXTRACT_METADATA -> result = jobHandler.handleMetadataExtraction(job.getPayload());
                 case HASH_FILE -> result = jobHandler.handleFileHashing(job.getPayload());
                 case HASH_TEXT -> result = jobHandler.handleTextHashing(job.getPayload());
+                case COMPARE_HASHES -> result = jobHandler.handleHashComparison(job.getPayload());
                 default -> {
                     logger.error("Job type {} not supported", job.getJobType());
                     throw new JobException("Job type not supported", null);

@@ -7,6 +7,7 @@ import com.blikeng.job.executor.metadata.FileTypeExtractor;
 import com.blikeng.job.executor.metadata.GeneralMetadata;
 import com.blikeng.job.executor.payloads.AddNumbersPayload;
 import com.blikeng.job.executor.payloads.FilePayload;
+import com.blikeng.job.executor.payloads.HashComparisonPayload;
 import com.blikeng.job.executor.payloads.TextPayload;
 import com.blikeng.job.executor.service.StorageService;
 import org.springframework.stereotype.Service;
@@ -168,5 +169,22 @@ public class JobHandler {
         } catch (NoSuchAlgorithmException exception) {
             throw new AlgorithmException("Algorithm was not found", "JobHandler.handleTextHashing", "SHA-256");
         }
+    }
+
+    public JsonNode handleHashComparison(String payloadString) {
+        HashComparisonPayload payload;
+
+        try {
+            payload = objectMapper.readValue(payloadString, HashComparisonPayload.class);
+        } catch (Exception e) {
+            throw new InvalidPayloadException("Unable to read payload for Hash Comparison", e);
+        }
+
+        if (payload.hashA() == null || payload.hashB() == null) {
+            throw new InvalidPayloadException("HashA and HashB must not be null", null);
+        }
+
+        return objectMapper.createObjectNode()
+                .put("match", payload.hashA().equals(payload.hashB()));
     }
 }
