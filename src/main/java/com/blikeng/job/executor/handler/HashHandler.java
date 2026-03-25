@@ -48,7 +48,7 @@ public class HashHandler extends BaseHandler {
                     .put("algorithm", "SHA-256");
 
         } catch (IOException e) {
-            throw new FileProcessingException("Unable to read file for File Hashing", e);
+            throw new FileProcessingException("Unable to read file for File Hashing", "HashHandler.handleFileHashing", e);
 
         } catch (NoSuchAlgorithmException exception) {
             throw new AlgorithmException("Algorithm was not found", "JobHandler.handleFileHashing", "SHA-256");
@@ -58,7 +58,7 @@ public class HashHandler extends BaseHandler {
     public JsonNode handleTextHashing(String payloadString) {
         TextPayload payload = parsePayload(payloadString, TextPayload.class, "Text Hashing");
         if (payload.content() == null || payload.content().isBlank()) {
-            throw new InvalidPayloadException("Text content must not be null or empty", null);
+            throw new InvalidPayloadException("Text content must not be null or empty", "HashHandler.handleTextHashing", null);
         }
 
         try {
@@ -81,7 +81,7 @@ public class HashHandler extends BaseHandler {
         HashComparisonPayload payload = parsePayload(payloadString, HashComparisonPayload.class, "Hash Comparison");
 
         if (payload.hashA() == null || payload.hashB() == null) {
-            throw new InvalidPayloadException("HashA and HashB must not be null", null);
+            throw new InvalidPayloadException("HashA and HashB must not be null", "HashHandler.handleHashComparison", null);
         }
 
         return objectMapper.createObjectNode()

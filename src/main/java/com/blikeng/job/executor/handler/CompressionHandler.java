@@ -47,7 +47,7 @@ public class CompressionHandler extends BaseHandler {
                     .put("file_path", zipPath.getFileName().toString());
 
         } catch (IOException e) {
-            throw new FileProcessingException("Unable to compress file for File Compression", e);
+            throw new FileProcessingException("Unable to compress file for File Compression", "CompressionHandler.handleFileCompression", e);
         }
     }
 
@@ -67,13 +67,13 @@ public class CompressionHandler extends BaseHandler {
 
             zipIn.closeEntry();
 
-            if (zipIn.getNextEntry() != null) throw new FileProcessingException("Zip file contains multiple entries", null);
+            if (zipIn.getNextEntry() != null) throw new FileProcessingException("Zip file contains multiple entries", "CompressionHandler.handleFileDeompression", null);
 
             return objectMapper.createObjectNode()
                     .put("decompressed_file", outputPath.getFileName().toString());
 
         } catch (IOException e) {
-            throw new FileProcessingException("Unable to decompress file for File Decompression", e);
+            throw new FileProcessingException("Unable to decompress file for File Decompression", "CompressionHandler.handleFileDeompression", e);
         }
     }
 
@@ -81,7 +81,7 @@ public class CompressionHandler extends BaseHandler {
         TextPayload payload = parsePayload(payloadString, TextPayload.class, "Text Compression");
 
         if (payload.content() == null || payload.content().isBlank()) {
-            throw new FileProcessingException("Text content must not be null or empty", null);
+            throw new FileProcessingException("Text content must not be null or empty", "CompressionHandler.handleTextCompression", null);
         }
 
         try (
@@ -102,7 +102,7 @@ public class CompressionHandler extends BaseHandler {
                     .put("compressed_text", base);
 
         } catch (IOException e) {
-            throw new FileProcessingException("Unable to compress text for Text Compression", e);
+            throw new FileProcessingException("Unable to compress text for Text Compression", "CompressionHandler.handleTextCompression", e);
         }
     }
 
@@ -110,7 +110,7 @@ public class CompressionHandler extends BaseHandler {
         TextPayload payload = parsePayload(payloadString, TextPayload.class, "Text Decompression");
 
         if (payload.content() == null) {
-            throw new InvalidPayloadException("Compressed text must not be null", null);
+            throw new InvalidPayloadException("Compressed text must not be null", "CompressionHandler.handleTextDecompression", null);
         }
 
         byte[] compressed;
@@ -118,7 +118,7 @@ public class CompressionHandler extends BaseHandler {
         try {
             compressed = Base64.getDecoder().decode(payload.content());
         } catch (IllegalArgumentException e) {
-            throw new InvalidPayloadException("Invalid base64 encoded text", e);
+            throw new InvalidPayloadException("Invalid base64 encoded text", "CompressionHandler.handleTextDecompression", e);
         }
 
         try (
@@ -127,7 +127,7 @@ public class CompressionHandler extends BaseHandler {
         ) {
             ZipEntry entry = zipIn.getNextEntry();
             if (entry == null) {
-                throw new FileProcessingException("Zip is empty", null);
+                throw new FileProcessingException("Zip is empty", "CompressionHandler.handleTextDecompression", null);
             }
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -141,24 +141,24 @@ public class CompressionHandler extends BaseHandler {
                     .put("text", result);
 
         } catch (IOException e) {
-            throw new FileProcessingException("Unable to decompress text", e);
+            throw new FileProcessingException("Unable to decompress text", "CompressionHandler.handleTextDecompression", e);
         }
     }
 
     private Path resolveSafeZipOutputPath(Path zipPath, ZipEntry zipEntry) {
         if (zipEntry == null) {
-            throw new FileProcessingException("Zip file is empty", null);
+            throw new FileProcessingException("Zip file is empty", "CompressionHandler.resolveSafeZipOutputPath", null);
         }
 
         if (zipEntry.isDirectory()) {
-            throw new FileProcessingException("Zip entry is a directory", null);
+            throw new FileProcessingException("Zip entry is a directory", "CompressionHandler.resolveSafeZipOutputPath", null);
         }
 
         Path outputPath = zipPath.resolveSibling(zipEntry.getName()).normalize();
         Path parent = outputPath.getParent();
 
         if (parent == null || !parent.equals(zipPath.getParent())) {
-            throw new FileProcessingException("Invalid zip entry path", null);
+            throw new FileProcessingException("Invalid zip entry path", "CompressionHandler.resolveSafeZipOutputPath", null);
         }
 
         return outputPath;
@@ -172,7 +172,7 @@ public class CompressionHandler extends BaseHandler {
                 out.write(buffer, 0, length);
             }
         } catch (IOException e) {
-            throw new FileProcessingException("I/O failure during " + context, e);
+            throw new FileProcessingException("I/O failure during " + context, "CompressionHandler.copy", e);
         }
     }
 }

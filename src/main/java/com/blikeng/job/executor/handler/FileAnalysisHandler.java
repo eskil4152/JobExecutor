@@ -40,7 +40,7 @@ public class FileAnalysisHandler extends BaseHandler {
         try {
             return Files.readString(path);
         } catch (IOException e) {
-            throw new FileProcessingException("Unable to read file contents", e);
+            throw new FileProcessingException("Unable to read file contents", "FileAnalysisHandler.readFileContent", e);
         }
     }
 }
