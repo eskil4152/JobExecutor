@@ -18,6 +18,11 @@ spring:
     error:
       include-message: always
 
+  servlet:
+    multipart:
+      max-file-size: 2GB
+      max-request-size: 2GB
+
 management:
   endpoints:
     web:

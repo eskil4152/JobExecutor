@@ -38,9 +38,12 @@ public class EncryptionHandler extends BaseHandler {
             byte[] plainText = Files.readAllBytes(path);
             EncryptionData data = encrypt(plainText, payload.key());
 
+            Path outputPath = path.resolveSibling(path.getFileName() + ".enc");
+            Files.write(outputPath, data.cipherBytes());
+
             return objectMapper.createObjectNode()
+                    .put("outputFile", outputPath.toString())
                     .put("algorithm", data.algorithm())
-                    .put("cipherText", data.cipherText())
                     .put("iv", data.iv())
                     .put("key", data.key());
 
@@ -86,7 +89,7 @@ public class EncryptionHandler extends BaseHandler {
 
         return objectMapper.createObjectNode()
                 .put("algorithm", data.algorithm())
-                .put("cipherText", data.cipherText())
+                .put("cipherText", Base64.getEncoder().encodeToString(data.cipherBytes()))
                 .put("iv", data.iv())
                 .put("key", data.key());
 
@@ -118,11 +121,11 @@ public class EncryptionHandler extends BaseHandler {
             GCMParameterSpec spec = new GCMParameterSpec(128, iv);
             cipher.init(Cipher.ENCRYPT_MODE, key, spec);
 
-            byte[] cipherText = cipher.doFinal(plainText);
+            byte[] cipherBytes = cipher.doFinal(plainText);
 
             return new EncryptionData(
                     "AES/GCM/NoPadding",
-                    Base64.getEncoder().encodeToString(cipherText),
+                    cipherBytes,
                     Base64.getEncoder().encodeToString(iv),
                     Base64.getEncoder().encodeToString(keyBytes)
             );
@@ -214,7 +217,7 @@ public class EncryptionHandler extends BaseHandler {
 
     private record EncryptionData(
             String algorithm,
-            String cipherText,
+            byte[] cipherBytes,
             String iv,
             String key
     ) {}
