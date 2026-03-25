@@ -49,6 +49,7 @@ public class JobExecutionService {
                 case HASH_FILE -> result = jobHandler.handleFileHashing(job.getPayload());
                 case HASH_TEXT -> result = jobHandler.handleTextHashing(job.getPayload());
                 case COMPARE_HASHES -> result = jobHandler.handleHashComparison(job.getPayload());
+                case COMPRESS_FILE -> result = jobHandler.handleFileCompression(job.getPayload());
                 default -> {
                     logger.error("Job type {} not supported", job.getJobType());
                     throw new JobException("Job type not supported", null);

@@ -16,14 +16,16 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.DigestInputStream;
-import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 public class JobHandler {
@@ -186,5 +188,54 @@ public class JobHandler {
 
         return objectMapper.createObjectNode()
                 .put("match", payload.hashA().equals(payload.hashB()));
+    }
+
+    public JsonNode handleFileCompression(String payloadString) {
+        FilePayload payload;
+
+        try {
+            payload = objectMapper.readValue(payloadString, FilePayload.class);
+        } catch (Exception e) {
+            throw new InvalidPayloadException("Unable to read payload for File Compression", e);
+        }
+
+        try {
+            Path path = storageService.getPath(payload.fileId());
+            Path zipPath = path.resolveSibling(path.getFileName().toString() + ".zip");
+
+            try (
+                InputStream in = Files.newInputStream(path);
+                ZipOutputStream zipOut = new ZipOutputStream(Files.newOutputStream(zipPath))
+            ) {
+                ZipEntry zipEntry = new ZipEntry(path.getFileName().toString());
+                zipOut.putNextEntry(zipEntry);
+
+                byte[] buffer = new byte[1024];
+                int length;
+                while ((length = in.read(buffer)) != -1) {
+                    zipOut.write(buffer, 0, length);
+                }
+
+                zipOut.closeEntry();
+            }
+
+            return objectMapper.createObjectNode()
+                    .put("file_path", zipPath.getFileName().toString());
+
+        } catch (IOException e) {
+            throw new FileProcessingException("Unable to compress file for File Compression", e);
+        }
+    }
+
+    public JsonNode handleFileDecompression(String payloadString) {
+        return null;
+    }
+
+    public JsonNode handleFileEncryption(String payloadString) {
+        return null;
+    }
+
+    public JsonNode handleFileDecryption(String payloadString) {
+        return null;
     }
 }
