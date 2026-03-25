@@ -3,9 +3,8 @@ package com.blikeng.job.executor.handler;
 import com.blikeng.job.executor.exception.AlgorithmException;
 import com.blikeng.job.executor.exception.FileProcessingException;
 import com.blikeng.job.executor.exception.InvalidPayloadException;
-import com.blikeng.job.executor.payloads.FilePayload;
 import com.blikeng.job.executor.payloads.HashComparisonPayload;
-import com.blikeng.job.executor.payloads.TextPayload;
+import com.blikeng.job.executor.payloads.HashPayload;
 import com.blikeng.job.executor.service.StorageService;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
@@ -27,12 +26,16 @@ public class HashHandler extends BaseHandler {
     }
 
     public JsonNode handleFileHashing(String payloadString) {
-        FilePayload payload = parsePayload(payloadString, FilePayload.class, "File Hashing");
+        HashPayload payload = parsePayload(payloadString, HashPayload.class, "File Hashing");
+
+        String algorithm = (payload.algorithm() == null || payload.algorithm().isBlank())
+                ? "SHA-256"
+                : payload.algorithm().trim().toUpperCase();
 
         try {
             Path path = getFilePath(payload.fileId(), "File Hashing");
 
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            MessageDigest md = MessageDigest.getInstance(algorithm);
 
             try (DigestInputStream digestStream = new DigestInputStream(Files.newInputStream(path), md)) {
                 byte[] buffer = new byte[1024];
@@ -45,24 +48,29 @@ public class HashHandler extends BaseHandler {
 
             return objectMapper.createObjectNode()
                     .put("hash", hex)
-                    .put("algorithm", "SHA-256");
+                    .put("algorithm", algorithm);
 
         } catch (IOException e) {
             throw new FileProcessingException("Unable to read file for File Hashing", "HashHandler.handleFileHashing", e);
 
         } catch (NoSuchAlgorithmException exception) {
-            throw new AlgorithmException("Algorithm was not found", "JobHandler.handleFileHashing", "SHA-256");
+            throw new AlgorithmException("Algorithm was not found", "JobHandler.handleFileHashing", algorithm);
         }
     }
 
     public JsonNode handleTextHashing(String payloadString) {
-        TextPayload payload = parsePayload(payloadString, TextPayload.class, "Text Hashing");
+        HashPayload payload = parsePayload(payloadString, HashPayload.class, "Text Hashing");
+
+        String algorithm = (payload.algorithm() == null || payload.algorithm().isBlank())
+                ? "SHA-256"
+                : payload.algorithm().trim().toUpperCase();
+
         if (payload.content() == null || payload.content().isBlank()) {
             throw new InvalidPayloadException("Text content must not be null or empty", "HashHandler.handleTextHashing", null);
         }
 
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            MessageDigest md = MessageDigest.getInstance(algorithm);
             byte[] bytes = payload.content().getBytes(StandardCharsets.UTF_8);
             byte[] digest = md.digest(bytes);
 
@@ -70,10 +78,10 @@ public class HashHandler extends BaseHandler {
 
             return objectMapper.createObjectNode()
                     .put("hash", hex)
-                    .put("algorithm", "SHA-256");
+                    .put("algorithm", algorithm);
 
         } catch (NoSuchAlgorithmException exception) {
-            throw new AlgorithmException("Algorithm was not found", "JobHandler.handleTextHashing", "SHA-256");
+            throw new AlgorithmException("Algorithm was not found", "JobHandler.handleTextHashing", algorithm);
         }
     }
 
