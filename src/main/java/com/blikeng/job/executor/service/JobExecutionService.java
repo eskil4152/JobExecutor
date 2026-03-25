@@ -2,7 +2,7 @@ package com.blikeng.job.executor.service;
 
 import com.blikeng.job.executor.domain.JobEntity;
 import com.blikeng.job.executor.exception.*;
-import com.blikeng.job.executor.handler.JobHandler;
+import com.blikeng.job.executor.handler.*;
 import com.blikeng.job.executor.repository.JobRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,14 +15,31 @@ import java.util.UUID;
 @Service
 public class JobExecutionService {
     private final JobRepository jobRepository;
+
+    private final CompressionHandler compressionHandler;
+    private final FileAnalysisHandler fileAnalysisHandler;
+    private final HashHandler hashHandler;
     private final JobHandler jobHandler;
+    private final MetadataHandler metadataHandler;
 
     private final Logger logger = LoggerFactory.getLogger(JobExecutionService.class);
     private final ObjectMapper objectMapper;
 
-    public JobExecutionService(JobRepository jobRepository, JobHandler jobHandler, ObjectMapper objectMapper) {
+    public JobExecutionService(
+            JobRepository jobRepository,
+            CompressionHandler compressionHandler,
+            FileAnalysisHandler fileAnalysisHandler,
+            HashHandler hashHandler,
+            JobHandler jobHandler,
+            MetadataHandler metadataHandler,
+            ObjectMapper objectMapper
+    ) {
         this.jobRepository = jobRepository;
+        this.compressionHandler = compressionHandler;
+        this.fileAnalysisHandler = fileAnalysisHandler;
+        this.hashHandler = hashHandler;
         this.jobHandler = jobHandler;
+        this.metadataHandler = metadataHandler;
         this.objectMapper = objectMapper;
     }
 
@@ -44,13 +61,13 @@ public class JobExecutionService {
             switch (job.getJobType()) {
                 case ADD_NUMBERS -> result = jobHandler.handleAddNumbers(job.getPayload());
                 case COUNT_WORDS -> result = jobHandler.handleCountWords(job.getPayload());
-                case ANALYZE_FILE -> result = jobHandler.handleFileAnalysis(job.getPayload());
-                case EXTRACT_METADATA -> result = jobHandler.handleMetadataExtraction(job.getPayload());
-                case HASH_FILE -> result = jobHandler.handleFileHashing(job.getPayload());
-                case HASH_TEXT -> result = jobHandler.handleTextHashing(job.getPayload());
-                case COMPARE_HASHES -> result = jobHandler.handleHashComparison(job.getPayload());
-                case COMPRESS_FILE -> result = jobHandler.handleFileCompression(job.getPayload());
-                case DECOMPRESS_FILE -> result = jobHandler.handleFileDecompression(job.getPayload());
+                case ANALYZE_FILE -> result = fileAnalysisHandler.handleFileAnalysis(job.getPayload());
+                case EXTRACT_METADATA -> result = metadataHandler.handleMetadataExtraction(job.getPayload());
+                case HASH_FILE -> result = hashHandler.handleFileHashing(job.getPayload());
+                case HASH_TEXT -> result = hashHandler.handleTextHashing(job.getPayload());
+                case COMPARE_HASHES -> result = hashHandler.handleHashComparison(job.getPayload());
+                case COMPRESS_FILE -> result = compressionHandler.handleFileCompression(job.getPayload());
+                case DECOMPRESS_FILE -> result = compressionHandler.handleFileDecompression(job.getPayload());
                 default -> {
                     logger.error("Job type {} not supported", job.getJobType());
                     throw new JobException("Job type not supported", null);
