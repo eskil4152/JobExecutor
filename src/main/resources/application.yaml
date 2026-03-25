@@ -43,3 +43,7 @@ info:
 
 server:
   port: ${PORT:8080}
+
+worker:
+  pool:
+    size: ${WORKER_POOL_SIZE:2}
