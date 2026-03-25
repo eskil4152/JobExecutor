@@ -17,6 +17,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,6 +26,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 @Service
@@ -228,6 +230,50 @@ public class JobHandler {
     }
 
     public JsonNode handleFileDecompression(String payloadString) {
+        FilePayload payload = parsePayload(payloadString, FilePayload.class, "File Decompression");
+
+        try {
+            Path zipPath = storageService.getPath(payload.fileId());
+
+            try (
+                    ZipInputStream zipIn = new ZipInputStream(Files.newInputStream(zipPath));
+            ) {
+                ZipEntry zipEntry = zipIn.getNextEntry();
+
+                if (zipEntry == null) throw new FileProcessingException("Zip file is empty. ", null);
+                if (zipEntry.isDirectory()) throw new FileProcessingException("Zip file is a directory. ", null);
+                if (zipIn.getNextEntry() != null) throw new FileProcessingException("Zip file contains multiple entries", null);
+
+                Path outputPath = zipPath.resolveSibling(zipEntry.getName()).normalize();
+
+                if (!outputPath.getParent().equals(zipPath.getParent())){
+                    throw new FileProcessingException("Invalid zip entry path", null);
+                }
+
+                try (OutputStream out = Files.newOutputStream(outputPath)) {
+                    byte[] buffer = new byte[1024];
+                    int length;
+                    while ((length = zipIn.read(buffer)) != -1) {
+                        out.write(buffer, 0, length);
+                    }
+                }
+
+                zipIn.closeEntry();
+
+                return objectMapper.createObjectNode()
+                        .put("decompressed_file", outputPath.getFileName().toString());
+            }
+
+        } catch (IOException e) {
+            throw new FileProcessingException("Unable to decompress file for File Decompression", e);
+        }
+    }
+
+    public JsonNode handleTextCompression(String payloadString){
+        return null;
+    }
+
+    public JsonNode handleTextDecompression(String payloadString){
         return null;
     }
 
@@ -237,5 +283,13 @@ public class JobHandler {
 
     public JsonNode handleFileDecryption(String payloadString) {
         return null;
+    }
+
+    private final <T> T parsePayload(String payloadString, Class<T> type, String context) {
+        try {
+            return objectMapper.readValue(payloadString, type);
+        } catch (Exception e) {
+            throw new InvalidPayloadException("Invalid payload for " + context, e);
+        }
     }
 }
