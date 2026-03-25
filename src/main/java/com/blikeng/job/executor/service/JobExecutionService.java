@@ -1,10 +1,7 @@
 package com.blikeng.job.executor.service;
 
 import com.blikeng.job.executor.domain.JobEntity;
-import com.blikeng.job.executor.exception.FileProcessingException;
-import com.blikeng.job.executor.exception.InvalidPayloadException;
-import com.blikeng.job.executor.exception.JobException;
-import com.blikeng.job.executor.exception.MetadataException;
+import com.blikeng.job.executor.exception.*;
 import com.blikeng.job.executor.handler.JobHandler;
 import com.blikeng.job.executor.repository.JobRepository;
 import org.slf4j.Logger;
@@ -49,6 +46,8 @@ public class JobExecutionService {
                 case COUNT_WORDS -> result = jobHandler.handleCountWords(job.getPayload());
                 case ANALYZE_FILE -> result = jobHandler.handleFileAnalysis(job.getPayload());
                 case EXTRACT_METADATA -> result = jobHandler.handleMetadataExtraction(job.getPayload());
+                case HASH_FILE -> result = jobHandler.handleFileHashing(job.getPayload());
+                case HASH_TEXT -> result = jobHandler.handleTextHashing(job.getPayload());
                 default -> {
                     logger.error("Job type {} not supported", job.getJobType());
                     throw new JobException("Job type not supported", null);
@@ -77,6 +76,11 @@ public class JobExecutionService {
             jobRepository.save(job);
 
             logger.error("Job {} file processing failure: {}", jobId, e.getMessage(), e);
+        } catch (AlgorithmException e) {
+            job.markJobFailed("Algorithm not found");
+            jobRepository.save(job);
+
+            logger.error("Job {} failed with algorithm: {}: {}", jobId, e.getAlgorithm(), e.getMessage(), e);
         }
 
         logger.info("Finished job {} of type {}", jobId, job.getJobType());

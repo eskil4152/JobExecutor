@@ -1,4 +1,4 @@
-package com.blikeng.job.executor.exception;
+package com.blikeng.job.executor.exception.Http;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

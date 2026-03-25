@@ -3,13 +3,12 @@ package com.blikeng.job.executor.service;
 import com.blikeng.job.executor.domain.JobEntity;
 import com.blikeng.job.executor.dto.JobDTO;
 import com.blikeng.job.executor.dto.JobResponseDTO;
-import com.blikeng.job.executor.exception.ApiException;
+import com.blikeng.job.executor.exception.Http.ApiException;
 import com.blikeng.job.executor.repository.JobRepository;
 import com.blikeng.job.executor.worker.JobTask;
 import com.blikeng.job.executor.worker.WorkerManager;
 import org.springframework.http.HttpStatus;
 import tools.jackson.core.JacksonException;
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 

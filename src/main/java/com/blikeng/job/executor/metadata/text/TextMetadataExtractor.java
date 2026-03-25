@@ -28,7 +28,7 @@ public class TextMetadataExtractor {
 
         result.put("category", "text");
         result.put("characters", content.length());
-        result.put("words", content.trim().isEmpty() ? 0 : content.trim().split("\\s+").length);
+        result.put("content", content.trim().isEmpty() ? 0 : content.trim().split("\\s+").length);
         result.put("lines", content.isEmpty() ? 0 : content.split("\n").length);
 
         Metadata metadata = new Metadata();
