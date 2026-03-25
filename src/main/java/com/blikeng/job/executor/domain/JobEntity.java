@@ -89,6 +89,8 @@ public class JobEntity {
 
     public void markJobFailed(String error) {
         this.jobStatus = JobStatus.FAILED;
+
+        this.jobFinished = Instant.now();
         this.result = error;
     }
 }

@@ -65,6 +65,9 @@ public class JobService {
             String payloadTemp = job.getPayload();
             String resultTemp = job.getResult();
 
+            System.out.println("PAYLOAD: " + payloadTemp);
+            System.out.println("RESULT: " + resultTemp);
+
             return new JobResponseDTO(
                     id,
                     job.getJobType(),

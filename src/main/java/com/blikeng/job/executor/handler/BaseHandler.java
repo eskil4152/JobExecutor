@@ -19,7 +19,7 @@ public abstract class BaseHandler {
         try {
             return objectMapper.readValue(payloadString, type);
         } catch (Exception e) {
-            throw new InvalidPayloadException("Invalid payload for " + context, e);
+            throw new InvalidPayloadException("Invalid payload", context, e);
         }
     }
 
@@ -27,7 +27,7 @@ public abstract class BaseHandler {
         try {
             return storageService.getPath(fileId);
         } catch (Exception e) {
-            throw new InvalidPayloadException("Invalid fileId for " + context, e);
+            throw new InvalidPayloadException("Invalid fileId" + context, context, e);
         }
     }
 }

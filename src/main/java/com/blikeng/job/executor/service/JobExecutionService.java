@@ -94,27 +94,27 @@ public class JobExecutionService {
             jobRepository.save(job);
 
         } catch (MetadataException e) {
-            job.markJobFailed("Failed to extract metadata");
+            job.markJobFailed(objectMapper.writeValueAsString("Failed to extract metadata"));
             jobRepository.save(job);
 
             logger.error("Job {} metadata extraction failure at {}: {}", jobId, e.getLocation(), e.getMessage(), e);
 
         } catch (InvalidPayloadException e) {
-            job.markJobFailed("Invalid payload");
+            job.markJobFailed(objectMapper.writeValueAsString("Invalid payload"));
             jobRepository.save(job);
 
-            logger.error("Job {} invalid payload: {}", jobId, e.getMessage(), e);
+            logger.error("Job {} invalid got payload at {}: {}", jobId, e.getLocation(), e.getMessage(), e);
 
         } catch (FileProcessingException e) {
-            job.markJobFailed("Failed to process file");
+            job.markJobFailed(objectMapper.writeValueAsString("Failed to process file"));
             jobRepository.save(job);
 
-            logger.error("Job {} file processing failure: {}", jobId, e.getMessage(), e);
+            logger.error("Job {} file processing failure at {}: {}", jobId, e.getLocation(), e.getMessage(), e);
         } catch (AlgorithmException e) {
-            job.markJobFailed("Algorithm not found");
+            job.markJobFailed(objectMapper.writeValueAsString("Algorithm not found"));
             jobRepository.save(job);
 
-            logger.error("Job {} failed with algorithm: {}: {}", jobId, e.getAlgorithm(), e.getMessage(), e);
+            logger.error("Job {} failed at {} with algorithm: {}: {}", jobId, e.getAlgorithm(), e.getLocation(), e.getMessage(), e);
         }
 
         logger.info("Finished job {} of type {}", jobId, job.getJobType());
