@@ -61,13 +61,19 @@ public class JobExecutionService {
             switch (job.getJobType()) {
                 case ADD_NUMBERS -> result = jobHandler.handleAddNumbers(job.getPayload());
                 case COUNT_WORDS -> result = jobHandler.handleCountWords(job.getPayload());
+
                 case ANALYZE_FILE -> result = fileAnalysisHandler.handleFileAnalysis(job.getPayload());
                 case EXTRACT_METADATA -> result = metadataHandler.handleMetadataExtraction(job.getPayload());
+
                 case HASH_FILE -> result = hashHandler.handleFileHashing(job.getPayload());
                 case HASH_TEXT -> result = hashHandler.handleTextHashing(job.getPayload());
                 case COMPARE_HASHES -> result = hashHandler.handleHashComparison(job.getPayload());
+
                 case COMPRESS_FILE -> result = compressionHandler.handleFileCompression(job.getPayload());
                 case DECOMPRESS_FILE -> result = compressionHandler.handleFileDecompression(job.getPayload());
+                case COMPRESS_TEXT -> result = compressionHandler.handleTextCompression(job.getPayload());
+                case DECOMPRESS_TEXT -> result = compressionHandler.handleTextDecompression(job.getPayload());
+
                 default -> {
                     logger.error("Job type {} not supported", job.getJobType());
                     throw new JobException("Job type not supported", null);
