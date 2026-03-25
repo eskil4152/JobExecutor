@@ -85,7 +85,7 @@ Jobs are accepted immediately and processed asynchronously. The submitting threa
 - Files are uploaded via `POST /api/file/` as multipart form data.
 - Each uploaded file is assigned a UUID-prefixed filename and stored in the `./uploads/` directory.
 - The returned file ID is then passed as `fileId` in payloads for any file-based job.
-- Uploaded files can be downloaded at any time via `GET /api/file/files/{fileId}`.
+- Uploaded files can be downloaded at any time via `GET /api/file/{fileId}`.
 - The upload limit is set in `application.properties`.
 
 ---
@@ -175,20 +175,20 @@ There are two distinct layers of error handling:
 
 ## API Overview
 
-| Method | Endpoint              | Description                   |
-|--------|-----------------------|-------------------------------|
-| POST   | /api/job              | Submit a job                  |
-| GET    | /api/job/{id}         | Get job status and result      |
-| POST   | /api/file/            | Upload a file                 |
-| GET    | /api/file/files/{id}  | Download a file               |
+| Method | Endpoint           | Description               |
+|--------|--------------------|---------------------------|
+| POST   | /api/job           | Submit a job              |
+| GET    | /api/job/{id}      | Get job status and result |
+| POST   | /api/file/         | Upload a file             |
+| GET    | /api/file/{fileId} | Download a file           |
 
 **Actuator**
 
-| Method | Endpoint              | Description                   |
-|--------|-----------------------|-------------------------------|
-| GET    | /actuator/health      | Application health            |
-| GET    | /actuator/info        | App name, description, version|
-| GET    | /actuator/metrics     | JVM and application metrics   |
+| Method | Endpoint          | Description                    |
+|--------|-------------------|--------------------------------|
+| GET    | /actuator/health  | Application health             |
+| GET    | /actuator/info    | App name, description, version |
+| GET    | /actuator/metrics | JVM and application metrics    |
 
 ---
 

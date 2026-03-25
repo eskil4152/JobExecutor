@@ -31,7 +31,7 @@ public class FileController {
         return ResponseEntity.ok().body("File uploaded: " + id);
     }
 
-    @GetMapping("/files/{fileId}")
+    @GetMapping("/{fileId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileId) {
         Path path = storageService.getPath(fileId);
 
