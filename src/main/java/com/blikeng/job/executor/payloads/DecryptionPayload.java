@@ -1,7 +1,8 @@
 package com.blikeng.job.executor.payloads;
 
-public record EncryptionPayload (
+public record DecryptionPayload(
         String fileId,
         String content,
-        String key
-){}
+        String key,
+        String iv
+) {}

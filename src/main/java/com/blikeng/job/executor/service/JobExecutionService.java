@@ -21,6 +21,7 @@ public class JobExecutionService {
     private final HashHandler hashHandler;
     private final JobHandler jobHandler;
     private final MetadataHandler metadataHandler;
+    private final EncryptionHandler encryptionHandler;
 
     private final Logger logger = LoggerFactory.getLogger(JobExecutionService.class);
     private final ObjectMapper objectMapper;
@@ -32,6 +33,7 @@ public class JobExecutionService {
             HashHandler hashHandler,
             JobHandler jobHandler,
             MetadataHandler metadataHandler,
+            EncryptionHandler encryptionHandler,
             ObjectMapper objectMapper
     ) {
         this.jobRepository = jobRepository;
@@ -40,6 +42,7 @@ public class JobExecutionService {
         this.hashHandler = hashHandler;
         this.jobHandler = jobHandler;
         this.metadataHandler = metadataHandler;
+        this.encryptionHandler = encryptionHandler;
         this.objectMapper = objectMapper;
     }
 
@@ -73,6 +76,11 @@ public class JobExecutionService {
                 case DECOMPRESS_FILE -> result = compressionHandler.handleFileDecompression(job.getPayload());
                 case COMPRESS_TEXT -> result = compressionHandler.handleTextCompression(job.getPayload());
                 case DECOMPRESS_TEXT -> result = compressionHandler.handleTextDecompression(job.getPayload());
+
+                case ENCRYPT_FILE -> result = encryptionHandler.handleFileEncryption(job.getPayload());
+                case DECRYPT_FILE -> result = encryptionHandler.handleFileDecryption(job.getPayload());
+                case ENCRYPT_TEXT -> result = encryptionHandler.handleTextEncryption(job.getPayload());
+                case DECRYPT_TEXT -> result = encryptionHandler.handleTextDecryption(job.getPayload());
 
                 default -> {
                     logger.error("Job type {} not supported", job.getJobType());

@@ -3,18 +3,14 @@ package com.blikeng.job.executor.handler;
 import com.blikeng.job.executor.exception.AlgorithmException;
 import com.blikeng.job.executor.exception.FileProcessingException;
 import com.blikeng.job.executor.exception.InvalidPayloadException;
+import com.blikeng.job.executor.payloads.DecryptionPayload;
 import com.blikeng.job.executor.payloads.EncryptionPayload;
-import com.blikeng.job.executor.payloads.FilePayload;
 import com.blikeng.job.executor.service.StorageService;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
+import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
@@ -36,7 +32,7 @@ public class EncryptionHandler extends BaseHandler {
     public JsonNode handleFileEncryption(String payloadString) {
         EncryptionPayload payload = parsePayload(payloadString, EncryptionPayload.class, "File Encryption");
 
-        Path path = getFilePath(payload.content(), "File encryption");
+        Path path = getFilePath(payload.fileId(), "File encryption");
 
         try {
             byte[] plainText = Files.readAllBytes(path);
@@ -50,6 +46,30 @@ public class EncryptionHandler extends BaseHandler {
 
         } catch (IOException e) {
             throw new FileProcessingException("Failed to read file", "EncryptionHandler.handleFileEncryption", e);
+        }
+    }
+
+    public JsonNode handleFileDecryption(String payloadString) {
+        DecryptionPayload payload = parsePayload(payloadString, DecryptionPayload.class, "File Decryption");
+
+        if (payload.fileId() == null || payload.iv() == null || payload.key() == null) {
+            throw new InvalidPayloadException("fileId, iv and key must not be null", "EncryptionHandler.handleFileDecryption", null);
+        }
+
+        Path inputPath = getFilePath(payload.fileId(), "File Decryption");
+
+        try {
+            byte[] cipherBytes = Files.readAllBytes(inputPath);
+            byte[] plainBytes = decrypt(cipherBytes, payload.iv(), payload.key());
+
+            Path outputPath = inputPath.resolveSibling(inputPath.getFileName() + ".decrypted");
+            Files.write(outputPath, plainBytes);
+
+            return objectMapper.createObjectNode()
+                    .put("file_path", outputPath.getFileName().toString());
+
+        } catch (IOException e) {
+            throw new FileProcessingException("File read/write failed", "EncryptionHandler.handleFileDecryption", e);
         }
     }
 
@@ -70,6 +90,21 @@ public class EncryptionHandler extends BaseHandler {
                 .put("iv", data.iv())
                 .put("key", data.key());
 
+    }
+
+    public JsonNode handleTextDecryption(String payloadString) {
+        DecryptionPayload payload = parsePayload(payloadString, DecryptionPayload.class, "Text Decryption");
+
+        if (payload.content() == null || payload.iv() == null || payload.key() == null) {
+            throw new InvalidPayloadException("cipherText, iv and key must not be null", "EncryptionHandler.handleTextDecryption" , null);
+        }
+
+        byte[] cipherBytes = decodeBase64(payload.content(), "cipherText");
+        byte[] plainBytes = decrypt(cipherBytes, payload.iv(), payload.key());
+        String text = new String(plainBytes, StandardCharsets.UTF_8);
+
+        return objectMapper.createObjectNode()
+                .put("content", text);
     }
 
     private EncryptionData encrypt(byte[] plainText, String base64Key) {
@@ -105,6 +140,45 @@ public class EncryptionHandler extends BaseHandler {
         }
     }
 
+    private byte[] decrypt(byte[] cipherBytes, String base64Iv, String base64Key) {
+        byte[] iv = decodeBase64(base64Iv, "IV");
+        byte[] keyBytes = decodeBase64(base64Key, "Key");
+
+        if (!(keyBytes.length == 16 || keyBytes.length == 24 || keyBytes.length == 32)) {
+            throw new InvalidPayloadException("Invalid AES key length", "EncryptionHandler.decrypt", null);
+        }
+
+        try {
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            SecretKey key = new SecretKeySpec(keyBytes, "AES");
+
+            GCMParameterSpec spec = new GCMParameterSpec(128, iv);
+            cipher.init(Cipher.DECRYPT_MODE, key, spec);
+
+            return cipher.doFinal(cipherBytes);
+
+        } catch (AEADBadTagException e) {
+            throw new FileProcessingException(
+                    "Decryption failed: authentication error (wrong key/iv/data)",
+                    "EncryptionHandler.decrypt",
+                    e
+            );
+
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            throw new AlgorithmException(
+                    "Algorithm not found",
+                    "EncryptionHandler.decrypt",
+                    "AES/GCM/NoPadding"
+            );
+
+        } catch (InvalidKeyException | InvalidAlgorithmParameterException e) {
+            throw new InvalidPayloadException("Invalid decryption key or parameters", "EncryptionHandler.decrypt", e);
+
+        } catch (IllegalBlockSizeException | BadPaddingException e) {
+            throw new FileProcessingException("Decryption failed", "EncryptionHandler.decrypt", e);
+        }
+    }
+
     private byte[] resolveAesKey(String base64Key) {
         if (base64Key == null || base64Key.isBlank()) {
             return generateRandomBytes(32);
@@ -128,6 +202,14 @@ public class EncryptionHandler extends BaseHandler {
         byte[] bytes = new byte[length];
         new SecureRandom().nextBytes(bytes);
         return bytes;
+    }
+
+    private byte[] decodeBase64(String value, String field) {
+        try {
+            return Base64.getDecoder().decode(value.trim());
+        } catch (Exception e) {
+            throw new InvalidPayloadException(field + " is not valid Base64", "EncryptionHandler.decodeBase64", e);
+        }
     }
 
     private record EncryptionData(
