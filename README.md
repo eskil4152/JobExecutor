@@ -1,7 +1,7 @@
 # Job Executor
 
 Job Executor is an asynchronous job processing service built with Java and Spring Boot.
-Clients submit jobs via a REST API and receive a job ID immediately. Jobs are executed in a background thread pool and results are persisted in PostgreSQL, ready to be polled at any time.
+Clients submit jobs via a REST API and receive a job ID immediately. Jobs are executed in a background thread pool, and results are persisted in PostgreSQL, ready to be polled at any time.
 
 ---
 
@@ -47,7 +47,7 @@ POST /api/job
 JobController → JobService → JobRepository (persist, status: QUEUED)
                            → WorkerManager.submitTask(JobTask)
                                     │
-                              fixed thread pool (2 workers)
+                              thread pool
                                     │
                                     ▼
                            JobExecutionService.execute()
@@ -63,7 +63,7 @@ JobController → JobService → JobRepository (persist, status: QUEUED)
 GET /api/job/{id}  →  JobRepository (read status + result)
 ```
 
-Jobs are accepted immediately and processed asynchronously. The submitting thread is never blocked by job execution.
+Jobs are accepted immediately and processed asynchronously. Job execution never blocks the submitting thread.
 
 ---
 
@@ -102,7 +102,7 @@ Jobs are accepted immediately and processed asynchronously. The submitting threa
 ### Compression
 
 - Files can be compressed to ZIP format and decompressed back. The output is saved alongside the original file in `./uploads/`.
-- Text strings can be compressed to a ZIP and returned as a **Base64-encoded** string, and decompressed back from Base64.
+- Text strings can be compressed to a ZIP and returned as a **Base64-encoded** string and decompressed back from Base64.
 - File decompression enforces single-entry ZIPs only — archives with multiple entries are rejected.
 - A path traversal check is applied during decompression to ensure extracted files cannot escape the storage directory.
 
@@ -134,14 +134,14 @@ Encryption is **AES-256-GCM** (AES/GCM/NoPadding with a 128-bit authentication t
 
 Metadata extraction is powered by **Apache Tika** for file type detection, with type-specific extractors for each category:
 
-| File Type   | Metadata Extracted                                                                                                          |
-|-------------|-----------------------------------------------------------------------------------------------------------------------------|
-| All files   | Name, size, timestamps (created, modified, accessed), owner, group                                                         |
-| Image       | Dimensions (JPEG, PNG, GIF, BMP, WebP), camera make/model/software, orientation, exposure time, f-number, ISO, focal length, color space, resolution, GPS coordinates |
+| File Type   | Metadata Extracted                                                                                                                                                                     |
+|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| All files   | Name, size, timestamps (created, modified, accessed), owner, group                                                                                                                     |
+| Image       | Dimensions (JPEG, PNG, GIF, BMP, WebP), camera make/model/software, orientation, exposure time, f-number, ISO, focal length, color space, resolution, GPS coordinates                  |
 | Audio       | ID3 tags (artist, album, title, track, year, genre, composer, language, record label, rating, barcode) + header (duration, bitrate, sample rate, channels, format, encoding, lossless) |
-| Video       | Duration, bitrate, format, video codec, width, height, frame rate, audio codec, sample rate, channels — extracted via `ffprobe` (must be installed) |
-| Text        | Character count, word count, line count, and all Tika-parsed metadata fields                                                |
-| Application | File type category only — format-specific extraction (PDF, DOCX, ZIP, etc.) is not yet implemented                         |
+| Video       | Duration, bitrate, format, video codec, width, height, frame rate, audio codec, sample rate, channels — extracted via `ffprobe` (must be installed)                                    |
+| Text        | Character count, word count, line count, and all Tika-parsed metadata fields                                                                                                           |
+| Application | File type category only — format-specific extraction (PDF, DOCX, ZIP, etc.) is not yet implemented                                                                                     |
 
 ---
 
@@ -163,13 +163,13 @@ There are two distinct layers of error handling:
 - Exceptions thrown inside handlers during job execution are caught by `JobExecutionService`, which marks the job as `FAILED` and logs the error. Clients are never exposed to the raw exception — polling the job will show `FAILED` status with a descriptive message indicating the cause (e.g. invalid payload, algorithm not found, file processing failure).
 - Each internal exception carries a `location` field (class and method name) for precise log tracing.
 
-| Exception                | Cause                                              |
-|--------------------------|----------------------------------------------------|
-| `InvalidPayloadException`| Missing or malformed job payload fields            |
-| `FileProcessingException`| I/O failure during file read, write, or extraction |
-| `MetadataException`      | Failure during metadata extraction                 |
-| `AlgorithmException`     | Unsupported or invalid cryptographic algorithm     |
-| `JobException`           | Job not found or unsupported job type              |
+| Exception                 | Cause                                              |
+|---------------------------|----------------------------------------------------|
+| `InvalidPayloadException` | Missing or malformed job payload fields            |
+| `FileProcessingException` | I/O failure during file read, write, or extraction |
+| `MetadataException`       | Failure during metadata extraction                 |
+| `AlgorithmException`      | Unsupported or invalid cryptographic algorithm     |
+| `JobException`            | Job not found or unsupported job type              |
 
 ---
 
@@ -198,7 +198,7 @@ All jobs are submitted to `POST /api/job` with the body:
 ```json
 {
   "jobType": "<JOB_TYPE>",
-  "payload": { ... }
+  "payload": { "...": "..." }
 }
 ```
 The response is a UUID string. Poll `GET /api/job/{id}` for status and result.
@@ -254,7 +254,7 @@ Payload:
 ```json
 { "fileId": "<fileId>" }
 ```
-Result varies by file type. Always includes general attributes; additional fields depend on the detected file type.
+The result varies by file type. Always includes general attributes; additional fields depend on the detected file type.
 
 ---
 
@@ -357,7 +357,7 @@ Result:
 ---
 
 ### `ENCRYPT_TEXT`
-Encrypts a plaintext string with AES-256-GCM. `key` is optional — omit to have one generated.
+Encrypts a plaintext string with AES-256-GCM. `key` is optional — omit having one generated.
 
 Payload:
 ```json
