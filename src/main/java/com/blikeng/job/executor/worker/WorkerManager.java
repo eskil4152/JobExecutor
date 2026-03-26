@@ -1,5 +1,6 @@
 package com.blikeng.job.executor.worker;
 
+import jakarta.annotation.PreDestroy;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ExecutorService;
@@ -16,6 +17,7 @@ public class WorkerManager {
         executorService.submit(task);
     }
 
+    @PreDestroy
     public void stopWorkers(){
         executorService.shutdown();
     }
