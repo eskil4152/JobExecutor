@@ -21,7 +21,7 @@ import java.util.HexFormat;
 
 @Service
 public class HashHandler extends BaseHandler {
-    protected HashHandler(ObjectMapper objectMapper, StorageService storageService) {
+    public HashHandler(ObjectMapper objectMapper, StorageService storageService) {
         super(objectMapper, storageService);
     }
 
@@ -88,8 +88,13 @@ public class HashHandler extends BaseHandler {
     public JsonNode handleHashComparison(String payloadString) {
         HashComparisonPayload payload = parsePayload(payloadString, HashComparisonPayload.class, "Hash Comparison");
 
-        if (payload.hashA() == null || payload.hashB() == null) {
-            throw new InvalidPayloadException("HashA and HashB must not be null", "HashHandler.handleHashComparison", null);
+        if (payload.hashA() == null || payload.hashA().isBlank()
+                || payload.hashB() == null || payload.hashB().isBlank()) {
+            throw new InvalidPayloadException(
+                    "HashA and HashB must not be null or blank",
+                    "HashHandler.handleHashComparison",
+                    null
+            );
         }
 
         return objectMapper.createObjectNode()

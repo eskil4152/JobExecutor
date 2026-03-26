@@ -20,7 +20,7 @@ import java.util.zip.ZipOutputStream;
 
 @Service
 public class CompressionHandler extends BaseHandler {
-    protected CompressionHandler(ObjectMapper objectMapper, StorageService storageService) {
+    public CompressionHandler(ObjectMapper objectMapper, StorageService storageService) {
         super(objectMapper, storageService);
     }
 

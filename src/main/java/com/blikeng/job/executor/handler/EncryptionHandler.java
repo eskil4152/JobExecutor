@@ -25,7 +25,7 @@ import java.util.Base64;
 
 @Service
 public class EncryptionHandler extends BaseHandler {
-    protected EncryptionHandler(ObjectMapper objectMapper, StorageService storageService) {
+    public EncryptionHandler(ObjectMapper objectMapper, StorageService storageService) {
         super(objectMapper, storageService);
     }
 

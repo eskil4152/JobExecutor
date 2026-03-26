@@ -13,7 +13,7 @@ import java.nio.file.Path;
 
 @Service
 public class MetadataHandler extends BaseHandler {
-    protected MetadataHandler(ObjectMapper objectMapper, StorageService storageService) {
+    public MetadataHandler(ObjectMapper objectMapper, StorageService storageService) {
         super(objectMapper, storageService);
     }
 

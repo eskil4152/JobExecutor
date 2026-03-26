@@ -9,7 +9,7 @@ import tools.jackson.databind.ObjectMapper;
 
 @Service
 public class JobHandler extends BaseHandler {
-    protected JobHandler(ObjectMapper objectMapper, StorageService storageService) {
+    public JobHandler(ObjectMapper objectMapper, StorageService storageService) {
         super(objectMapper, storageService);
     }
 
