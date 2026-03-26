@@ -34,6 +34,10 @@ public class JobService {
     }
 
     public UUID receiveTask(JobDTO jobDTO){
+        if (jobDTO.jobType() == null || jobDTO.payload() == null) {
+            throw new ApiException("Job type and payload are required", HttpStatus.BAD_REQUEST);
+        }
+
         try {
             JobEntity job = new JobEntity(
                     jobDTO.jobType(),

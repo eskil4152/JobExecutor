@@ -4,6 +4,7 @@ import com.blikeng.job.executor.exception.Http.ApiException;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,10 +18,11 @@ import java.util.UUID;
 
 @Service
 public class StorageService {
-    private final Path storagePath = Paths.get("./uploads");
+    private final Path storagePath;
 
-    public StorageService() throws IOException {
-        Files.createDirectories(storagePath);
+    public StorageService(@Value("${storage.path:./uploads}") String storagePath) throws IOException {
+        this.storagePath = Paths.get(storagePath);
+        Files.createDirectories(this.storagePath);
     }
 
     public String store(MultipartFile file) throws IOException {
