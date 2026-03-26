@@ -210,7 +210,7 @@ public class EncryptionHandler extends BaseHandler {
     private byte[] decodeBase64(String value, String field) {
         try {
             return Base64.getDecoder().decode(value.trim());
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             throw new InvalidPayloadException(field + " is not valid Base64", "EncryptionHandler.decodeBase64", e);
         }
     }

@@ -6,28 +6,41 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Map;
 
 public class VideoMetadataExtractor {
-    private final static ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public static void extract(Path path, ObjectNode result) {
+        extract(path, result, "ffprobe");
+    }
+
+    public static void extract(Path path, ObjectNode result, String ffprobeCommand) {
         try {
             result.put("category", "video");
             result.put("fileSize", path.toFile().length());
 
-            ProcessBuilder processBuilder = extractVideoData(path);
+            ProcessBuilder processBuilder = new ProcessBuilder(
+                    ffprobeCommand,
+                    "-v", "quiet",
+                    "-print_format", "json",
+                    "-show_format",
+                    "-show_streams",
+                    path.toString()
+            );
+
+            processBuilder.redirectErrorStream(true);
 
             Process process = processBuilder.start();
 
-            String output = new String(process.getInputStream().readAllBytes());
-            String error = new String(process.getErrorStream().readAllBytes());
+            String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
 
             int code = process.waitFor();
 
             if (code != 0) {
-                error = error.isBlank() ? "no error output" : error.trim();
+                String error = output.isBlank() ? "no error output" : output.trim();
 
                 throw new MetadataException(
                         "ffprobe failed (exit=" + code + "): " + error,
@@ -36,46 +49,40 @@ public class VideoMetadataExtractor {
                 );
             }
 
-            JsonNode probeResult = objectMapper.readTree(output);
-
-            JsonNode format = probeResult.get("format");
-            JsonNode streams = probeResult.get("streams");
-
-            if (format != null) {
-                copyFields(format, result, FORMAT_FIELDS);
-            }
-
-            if (streams != null && streams.isArray()) {
-                for (JsonNode stream : streams) {
-                    if (!stream.has("codec_type")) {
-                        continue;
-                    }
-
-                    String type = stream.get("codec_type").asString();
-
-                    if ("video".equals(type)) {
-                        copyFields(stream, result, VIDEO_FIELDS);
-                    } else if ("audio".equals(type)) {
-                        copyFields(stream, result, AUDIO_FIELDS);
-                    }
-                }
-            }
+            parseProbeResult(output, result);
         } catch (IOException exception) {
             throw new MetadataException("Error reading video metadata", "VideoMetadataExtractor.extract", exception);
         } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
             throw new MetadataException("Metadata extraction interrupted", "VideoMetadataExtractor.extract", exception);
         }
     }
 
-    private static ProcessBuilder extractVideoData(Path path) {
-        return new ProcessBuilder(
-                "ffprobe",
-                "-v", "quiet",
-                "-print_format", "json",
-                "-show_format",
-                "-show_streams",
-                path.toString()
-        );
+    static void parseProbeResult(String output, ObjectNode result) throws IOException {
+        JsonNode probeResult = objectMapper.readTree(output);
+
+        JsonNode format = probeResult.get("format");
+        JsonNode streams = probeResult.get("streams");
+
+        if (format != null) {
+            copyFields(format, result, FORMAT_FIELDS);
+        }
+
+        if (streams != null && streams.isArray()) {
+            for (JsonNode stream : streams) {
+                if (!stream.has("codec_type")) {
+                    continue;
+                }
+
+                String type = stream.get("codec_type").asString();
+
+                if ("video".equals(type)) {
+                    copyFields(stream, result, VIDEO_FIELDS);
+                } else if ("audio".equals(type)) {
+                    copyFields(stream, result, AUDIO_FIELDS);
+                }
+            }
+        }
     }
 
     private static void copyFields(JsonNode source, ObjectNode result, Map<String, String> fields) {
@@ -93,7 +100,7 @@ public class VideoMetadataExtractor {
                 result.put(resultKey, value.asInt());
             } else if (value.isLong()) {
                 result.put(resultKey, value.asLong());
-            } else if (value.isFloat() || value.isDouble() || value.isBigDecimal()) {
+            } else if (value.isFloatingPointNumber()) {
                 result.put(resultKey, value.asDouble());
             } else if (value.isBoolean()) {
                 result.put(resultKey, value.asBoolean());

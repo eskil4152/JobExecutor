@@ -27,30 +27,38 @@ public class AudioMetadataExtractor {
 
         Tag tag = audioFile.getTag();
         if (tag != null) {
-            result.put("artist", tag.getFirst(FieldKey.ARTIST));
-            result.put("album", tag.getFirst(FieldKey.ALBUM));
-            result.put("title", tag.getFirst(FieldKey.TITLE));
-            result.put("comment", tag.getFirst(FieldKey.COMMENT));
-            result.put("year", tag.getFirst(FieldKey.YEAR));
-            result.put("track", tag.getFirst(FieldKey.TRACK));
-            result.put("genre", tag.getFirst(FieldKey.GENRE));
-            result.put("composer", tag.getFirst(FieldKey.COMPOSER));
-            result.put("language", tag.getFirst(FieldKey.LANGUAGE));
-            result.put("recordLabel", tag.getFirst(FieldKey.RECORD_LABEL));
-            result.put("rating", tag.getFirst(FieldKey.RATING));
-            result.put("barcode", tag.getFirst(FieldKey.BARCODE));
+            putTagField(result, tag, "artist", FieldKey.ARTIST);
+            putTagField(result, tag, "album", FieldKey.ALBUM);
+            putTagField(result, tag, "title", FieldKey.TITLE);
+            putTagField(result, tag, "comment", FieldKey.COMMENT);
+            putTagField(result, tag, "year", FieldKey.YEAR);
+            putTagField(result, tag, "track", FieldKey.TRACK);
+            putTagField(result, tag, "genre", FieldKey.GENRE);
+            putTagField(result, tag, "composer", FieldKey.COMPOSER);
+            putTagField(result, tag, "language", FieldKey.LANGUAGE);
+            putTagField(result, tag, "recordLabel", FieldKey.RECORD_LABEL);
+            putTagField(result, tag, "rating", FieldKey.RATING);
+            putTagField(result, tag, "barcode", FieldKey.BARCODE);
         }
 
         AudioHeader header = audioFile.getAudioHeader();
         if (header != null) {
             result.put("duration", header.getTrackLength());
             result.put("bitrate", header.getBitRate());
-            result.put("vbt", header.isVariableBitRate());
+            result.put("vbr", header.isVariableBitRate());
             result.put("channels", header.getChannels());
             result.put("format", header.getFormat());
             result.put("sampleRate", header.getSampleRate());
             result.put("encoding", header.getEncodingType());
             result.put("lossless", header.isLossless());
+        }
+    }
+
+    private static void putTagField(ObjectNode result, Tag tag, String key, FieldKey field) {
+        try {
+            result.put(key, tag.getFirst(field));
+        } catch (UnsupportedOperationException ignored) {
+            // Some tag types don't support all FieldKey values
         }
     }
 }

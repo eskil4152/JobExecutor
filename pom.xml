@@ -125,6 +125,15 @@
                                 <format>XML</format>
                                 <format>HTML</format>
                             </formats>
+                            <excludes>
+                                <exclude>**/JobExecutorApplication*</exclude>
+                                <exclude>**/dto/**</exclude>
+                                <exclude>**/payloads/**</exclude>
+                                <exclude>**/domain/**</exclude>
+                                <exclude>**/config/**</exclude>
+                                <exclude>**/exception/**</exclude>
+                                <exclude>**/repository/**</exclude>
+                            </excludes>
                         </configuration>
                     </execution>
                 </executions>

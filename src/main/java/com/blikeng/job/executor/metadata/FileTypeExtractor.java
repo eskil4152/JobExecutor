@@ -24,18 +24,16 @@ public class FileTypeExtractor {
             throw new MetadataException("Failed to detect file type", "FileTypeExtractor.findFileType", e);
         }
 
-        if (contentType != null) {
-            String[] parts = contentType.split("/");
-            String fileType = parts.length > 0 ? parts[0] : "unknown";
+        String[] parts = contentType.split("/");
+        String fileType = parts[0];
 
-            switch (fileType) {
-                case "text" -> TextMetadataExtractor.extract(path, result);
-                case "application" -> ApplicationMetadataExtractor.extract(path, result);
-                case "image" -> ImageMetadataExtractor.extract(path, result);
-                case "video" -> VideoMetadataExtractor.extract(path, result);
-                case "audio" -> AudioMetadataExtractor.extract(path, result);
-                default -> {}
-            }
+        switch (fileType) {
+            case "text" -> TextMetadataExtractor.extract(path, result);
+            case "application" -> ApplicationMetadataExtractor.extract(path, result);
+            case "image" -> ImageMetadataExtractor.extract(path, result);
+            case "video" -> VideoMetadataExtractor.extract(path, result);
+            case "audio" -> AudioMetadataExtractor.extract(path, result);
+            default -> {}
         }
     }
 }
