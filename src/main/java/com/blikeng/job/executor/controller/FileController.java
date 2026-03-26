@@ -1,9 +1,11 @@
 package com.blikeng.job.executor.controller;
 
+import com.blikeng.job.executor.exception.Http.ApiException;
 import com.blikeng.job.executor.service.StorageService;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +24,7 @@ public class FileController {
         this.storageService = storageService;
     }
 
-    @PostMapping("/")
+    @PostMapping()
     public ResponseEntity<String> uploadFile(
             @RequestParam("file") MultipartFile file
     ) throws IOException {
@@ -33,22 +35,11 @@ public class FileController {
 
     @GetMapping("/{fileId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileId) {
-        Path path = storageService.getPath(fileId);
+        Resource resource = storageService.getFile(fileId);
 
-        try {
-            Resource resource = new UrlResource(path.toUri());
-
-            if (!resource.exists()) {
-                throw new FileNotFoundException();
-            }
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + path.getFileName() + "\"")
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(resource);
-
-        } catch (Exception e) {
-            throw new RuntimeException("Could not read file", e);
-        }
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
     }
 }
