@@ -8,12 +8,15 @@ import com.blikeng.job.executor.repository.JobRepository;
 import com.blikeng.job.executor.service.JobExecutionService;
 import com.blikeng.job.executor.service.JobService;
 import com.blikeng.job.executor.worker.WorkerManager;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.Optional;
@@ -21,6 +24,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -86,15 +90,6 @@ public class JobServiceTests {
     // ==========================
     // Get Jobs
     // ==========================
-
-    @Test
-    void shouldReturnJobResponseDTOForValidId() {
-        JobDTO jobDTO = new JobDTO(null, objectMapper.createObjectNode());
-
-        assertThatThrownBy(() -> jobService.receiveTask(jobDTO))
-                .isInstanceOf(ApiException.class);
-    }
-
     @Test
     void shouldThrowBadRequestForInvalidUUID() {
         assertThatThrownBy(() -> jobService.getJob("not a UUID")).isInstanceOf(ApiException.class);
@@ -105,5 +100,98 @@ public class JobServiceTests {
         when(jobRepository.findById(any())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> jobService.getJob(UUID.randomUUID().toString())).isInstanceOf(ApiException.class);
+    }
+
+    @Test
+    void shouldThrowInternalServerErrorWhenStoredPayloadIsInvalidJson() {
+        UUID id = UUID.randomUUID();
+
+        JobEntity job = org.mockito.Mockito.mock(JobEntity.class);
+        when(job.getPayload()).thenReturn("{invalid json");
+        when(job.getResult()).thenReturn(null);
+
+        when(jobRepository.findById(id)).thenReturn(Optional.of(job));
+
+        assertThatThrownBy(() -> jobService.getJob(id.toString()))
+                .isInstanceOf(ApiException.class);
+    }
+
+    @Test
+    void shouldThrowInternalServerErrorWhenStoredResultIsInvalidJson() {
+        UUID id = UUID.randomUUID();
+
+        JobEntity job = org.mockito.Mockito.mock(JobEntity.class);
+        when(job.getPayload()).thenReturn("{}");
+        when(job.getResult()).thenReturn("{invalid json");
+
+        when(jobRepository.findById(id)).thenReturn(Optional.of(job));
+
+        assertThatThrownBy(() -> jobService.getJob(id.toString()))
+                .isInstanceOf(ApiException.class);
+    }
+
+    @Test
+    void shouldReturnJobResponseDTOWhenPayloadAndResultAreNull() {
+        UUID id = UUID.randomUUID();
+
+        JobEntity job = org.mockito.Mockito.mock(JobEntity.class);
+        when(job.getPayload()).thenReturn(null);
+        when(job.getResult()).thenReturn(null);
+        when(job.getJobType()).thenReturn(JobType.ADD_NUMBERS);
+        when(job.getJobStatus()).thenReturn(null);
+        when(job.getJobCreated()).thenReturn(null);
+        when(job.getJobStarted()).thenReturn(null);
+        when(job.getJobFinished()).thenReturn(null);
+
+        when(jobRepository.findById(id)).thenReturn(Optional.of(job));
+
+        var response = jobService.getJob(id.toString());
+
+        assertEquals(id.toString(), response.getJobId());
+        assertEquals(JobType.ADD_NUMBERS, response.getJobType());
+        assertNull(response.getPayload());
+        assertNull(response.getResult());
+    }
+
+    @Test
+    void shouldReturnJobResponseDTOWhenPayloadIsNullAndResultIsPresent() {
+        UUID id = UUID.randomUUID();
+
+        JobEntity job = org.mockito.Mockito.mock(JobEntity.class);
+        when(job.getPayload()).thenReturn(null);
+        when(job.getResult()).thenReturn("{\"sum\":3}");
+        when(job.getJobType()).thenReturn(JobType.ADD_NUMBERS);
+        when(job.getJobStatus()).thenReturn(null);
+        when(job.getJobCreated()).thenReturn(null);
+        when(job.getJobStarted()).thenReturn(null);
+        when(job.getJobFinished()).thenReturn(null);
+
+        when(jobRepository.findById(id)).thenReturn(Optional.of(job));
+
+        var response = jobService.getJob(id.toString());
+
+        assertEquals(null, response.getPayload());
+        assertEquals(3, response.getResult().get("sum").asInt());
+    }
+
+    @Test
+    void shouldReturnJobResponseDTOWhenPayloadIsPresentAndResultIsNull() {
+        UUID id = UUID.randomUUID();
+
+        JobEntity job = org.mockito.Mockito.mock(JobEntity.class);
+        when(job.getPayload()).thenReturn("{\"a\":1}");
+        when(job.getResult()).thenReturn(null);
+        when(job.getJobType()).thenReturn(JobType.ADD_NUMBERS);
+        when(job.getJobStatus()).thenReturn(null);
+        when(job.getJobCreated()).thenReturn(null);
+        when(job.getJobStarted()).thenReturn(null);
+        when(job.getJobFinished()).thenReturn(null);
+
+        when(jobRepository.findById(id)).thenReturn(Optional.of(job));
+
+        var response = jobService.getJob(id.toString());
+
+        assertEquals(1, response.getPayload().get("a").asInt());
+        assertEquals(null, response.getResult());
     }
 }

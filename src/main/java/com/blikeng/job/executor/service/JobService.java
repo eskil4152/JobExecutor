@@ -54,18 +54,12 @@ public class JobService {
     }
 
     public JobResponseDTO getJob(String id){
-        UUID uuid;
-
         try {
-            uuid = UUID.fromString(id);
-        } catch (Exception e) {
-            throw new ApiException("Passed ID was not valid UUID", HttpStatus.BAD_REQUEST);
-        }
+            UUID uuid = UUID.fromString(id);
 
-        JobEntity job = jobRepository.findById(uuid)
-                .orElseThrow(() -> new ApiException("Requested job was not found", HttpStatus.NOT_FOUND));
+            JobEntity job = jobRepository.findById(uuid)
+                    .orElseThrow(() -> new ApiException("Requested job was not found", HttpStatus.NOT_FOUND));
 
-        try {
             String payloadTemp = job.getPayload();
             String resultTemp = job.getResult();
 
@@ -84,6 +78,8 @@ public class JobService {
             );
         } catch (JacksonException e) {
             throw new ApiException("Failed to read stored job data", HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (IllegalArgumentException e) {
+            throw new ApiException("Invalid UUID", HttpStatus.BAD_REQUEST);
         }
     }
 }
