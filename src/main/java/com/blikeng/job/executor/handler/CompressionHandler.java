@@ -6,7 +6,9 @@ import com.blikeng.job.executor.exception.messages.InternalMessages;
 import com.blikeng.job.executor.payloads.FilePayload;
 import com.blikeng.job.executor.payloads.TextPayload;
 import com.blikeng.job.executor.service.StorageService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.unit.DataSize;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -21,6 +23,13 @@ import java.util.zip.ZipOutputStream;
 
 @Service
 public class CompressionHandler extends BaseHandler {
+
+    @Value("${app.max-decompressed-size}")
+    private DataSize maxDecompressedSize;
+
+    @Value("${app.max-expansion-ratio}")
+    private int maxExpansionRatio;
+
     public CompressionHandler(ObjectMapper objectMapper, StorageService storageService) {
         super(objectMapper, storageService);
     }
@@ -62,8 +71,10 @@ public class CompressionHandler extends BaseHandler {
             ZipEntry zipEntry = zipIn.getNextEntry();
             Path outputPath = resolveSafeZipOutputPath(zipPath, zipEntry);
 
+            long compressedSize = Files.size(zipPath);
+
             try (OutputStream out = Files.newOutputStream(outputPath)) {
-                copy(zipIn, out);
+                copyWithLimits(zipIn, out, compressedSize);
             }
 
             zipIn.closeEntry();
@@ -202,6 +213,37 @@ public class CompressionHandler extends BaseHandler {
             }
         } catch (IOException e) {
             throw new FileProcessingException(InternalMessages.FILE_READ_WRITE_FAILED.getMessage(), "CompressionHandler.copy", e);
+        }
+    }
+
+    private void copyWithLimits(InputStream in, OutputStream out, long compressedSize) throws IOException {
+        byte[] buffer = new byte[8192];
+        long totalWritten = 0;
+        int read;
+
+        long maxBytes = maxDecompressedSize.toBytes(); // <-- fix
+
+        long maxByRatio;
+        if (compressedSize <= 0) {
+            maxByRatio = maxBytes;
+        } else {
+            maxByRatio = compressedSize * maxExpansionRatio;
+        }
+
+        long allowedMax = Math.min(maxBytes, maxByRatio);
+
+        while ((read = in.read(buffer)) != -1) {
+            totalWritten += read;
+
+            if (totalWritten > allowedMax) {
+                throw new FileProcessingException(
+                        InternalMessages.FAILED_TO_DECOMPRESS.getMessage(),
+                        "CompressionHandler.copyWithLimits",
+                        null
+                );
+            }
+
+            out.write(buffer, 0, read);
         }
     }
 }
