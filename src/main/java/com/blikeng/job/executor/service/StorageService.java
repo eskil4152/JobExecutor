@@ -58,9 +58,9 @@ public class StorageService {
 
             return resource;
 
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException _) {
             throw new ApiException(ApiMessages.URL_NOT_VALID.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException _) {
             throw new ApiException(ApiMessages.FILE_NOT_FOUND.getMessage(), HttpStatus.NOT_FOUND);
         }
     }

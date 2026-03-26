@@ -77,9 +77,9 @@ public class JobService {
                     job.getJobStarted(),
                     job.getJobFinished()
             );
-        } catch (JacksonException e) {
+        } catch (JacksonException _) {
             throw new ApiException(ApiMessages.JOB_READ_FAILED.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException _) {
             throw new ApiException(ApiMessages.INVALID_UUID.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }

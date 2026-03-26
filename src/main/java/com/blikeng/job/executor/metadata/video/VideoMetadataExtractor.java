@@ -59,7 +59,7 @@ public class VideoMetadataExtractor {
         }
     }
 
-    static void parseProbeResult(String output, ObjectNode result) throws IOException {
+    static void parseProbeResult(String output, ObjectNode result) {
         JsonNode probeResult = objectMapper.readTree(output);
 
         JsonNode format = probeResult.get("format");

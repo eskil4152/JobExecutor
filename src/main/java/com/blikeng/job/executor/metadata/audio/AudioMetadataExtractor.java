@@ -58,7 +58,7 @@ public class AudioMetadataExtractor {
     private static void putTagField(ObjectNode result, Tag tag, String key, FieldKey field) {
         try {
             result.put(key, tag.getFirst(field));
-        } catch (UnsupportedOperationException ignored) {
+        } catch (UnsupportedOperationException _) {
             // Some tag types don't support all FieldKey values
         }
     }
