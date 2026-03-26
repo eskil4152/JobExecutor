@@ -144,10 +144,10 @@ public class JobServiceTests {
 
         var response = jobService.getJob(id.toString());
 
-        assertEquals(id.toString(), response.getJobId());
-        assertEquals(JobType.ADD_NUMBERS, response.getJobType());
-        assertNull(response.getPayload());
-        assertNull(response.getResult());
+        assertEquals(id.toString(), response.jobId());
+        assertEquals(JobType.ADD_NUMBERS, response.jobType());
+        assertNull(response.payload());
+        assertNull(response.result());
     }
 
     @Test
@@ -167,8 +167,8 @@ public class JobServiceTests {
 
         var response = jobService.getJob(id.toString());
 
-        assertEquals(null, response.getPayload());
-        assertEquals(3, response.getResult().get("sum").asInt());
+        assertEquals(null, response.payload());
+        assertEquals(3, response.result().get("sum").asInt());
     }
 
     @Test
@@ -188,7 +188,7 @@ public class JobServiceTests {
 
         var response = jobService.getJob(id.toString());
 
-        assertEquals(1, response.getPayload().get("a").asInt());
-        assertEquals(null, response.getResult());
+        assertEquals(1, response.payload().get("a").asInt());
+        assertEquals(null, response.result());
     }
 }
