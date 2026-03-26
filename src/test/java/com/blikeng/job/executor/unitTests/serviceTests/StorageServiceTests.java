@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class StorageServiceTests {
     // ==========================
@@ -44,7 +45,7 @@ public class StorageServiceTests {
 
         String id = storageService.store(file);
 
-        assert id != null;
+        assertNotNull(id);
         assert tempDir.resolve(id).toFile().exists();
     }
 
@@ -68,7 +69,7 @@ public class StorageServiceTests {
         String id = storageService.store(file);
 
         Resource resource = storageService.getFile(id);
-        assert resource != null;
+        assertNotNull(resource);
     }
 
     @Test
