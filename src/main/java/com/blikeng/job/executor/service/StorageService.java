@@ -1,6 +1,7 @@
 package com.blikeng.job.executor.service;
 
-import com.blikeng.job.executor.exception.Http.ApiException;
+import com.blikeng.job.executor.exception.http.ApiException;
+import com.blikeng.job.executor.exception.messages.ApiMessages;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
@@ -39,7 +40,7 @@ public class StorageService {
             Path path = getPath(fileId).normalize();
 
             if (!path.startsWith(storagePath)) {
-                throw new ApiException("URL not valid", HttpStatus.BAD_REQUEST);
+                throw new ApiException(ApiMessages.URL_NOT_VALID.getMessage(), HttpStatus.BAD_REQUEST);
             }
 
             Resource resource = new UrlResource(path.toUri());
@@ -51,9 +52,9 @@ public class StorageService {
             return resource;
 
         } catch (MalformedURLException e) {
-            throw new ApiException("URL not valid", HttpStatus.BAD_REQUEST);
+            throw new ApiException(ApiMessages.URL_NOT_VALID.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (FileNotFoundException e) {
-            throw new ApiException("File not found", HttpStatus.NOT_FOUND);
+            throw new ApiException(ApiMessages.FILE_NOT_FOUND.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 

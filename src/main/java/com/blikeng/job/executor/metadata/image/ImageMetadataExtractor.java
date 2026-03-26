@@ -1,6 +1,7 @@
 package com.blikeng.job.executor.metadata.image;
 
 import com.blikeng.job.executor.exception.MetadataException;
+import com.blikeng.job.executor.exception.messages.InternalMessages;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
@@ -18,7 +19,7 @@ public class ImageMetadataExtractor {
         try {
             metadata = ImageMetadataReader.readMetadata(path.toFile());
         } catch (ImageProcessingException | IOException e) {
-            throw new MetadataException("Failed to read image metadata", "ImageMetadataExtractor.extract", e);
+            throw new MetadataException(InternalMessages.FAILED_TO_READ_IMAGE_METADATA.getMessage(), "ImageMetadataExtractor.extract", e);
         }
 
         result.put("category", "image");

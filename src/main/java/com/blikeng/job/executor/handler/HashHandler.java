@@ -3,6 +3,7 @@ package com.blikeng.job.executor.handler;
 import com.blikeng.job.executor.exception.AlgorithmException;
 import com.blikeng.job.executor.exception.FileProcessingException;
 import com.blikeng.job.executor.exception.InvalidPayloadException;
+import com.blikeng.job.executor.exception.messages.InternalMessages;
 import com.blikeng.job.executor.payloads.HashComparisonPayload;
 import com.blikeng.job.executor.payloads.HashPayload;
 import com.blikeng.job.executor.service.StorageService;
@@ -51,10 +52,10 @@ public class HashHandler extends BaseHandler {
                     .put("algorithm", algorithm);
 
         } catch (IOException e) {
-            throw new FileProcessingException("Unable to read file for File Hashing", "HashHandler.handleFileHashing", e);
+            throw new FileProcessingException(InternalMessages.FAILED_TO_READ_FILE.getMessage(), "HashHandler.handleFileHashing", e);
 
         } catch (NoSuchAlgorithmException exception) {
-            throw new AlgorithmException("Algorithm was not found", "JobHandler.handleFileHashing", algorithm);
+            throw new AlgorithmException(InternalMessages.ALGORITHM_NOT_FOUND.getMessage(), "JobHandler.handleFileHashing", algorithm);
         }
     }
 
@@ -66,7 +67,7 @@ public class HashHandler extends BaseHandler {
                 : payload.algorithm().trim().toUpperCase();
 
         if (payload.content() == null || payload.content().isBlank()) {
-            throw new InvalidPayloadException("Text content must not be null or empty", "HashHandler.handleTextHashing", null);
+            throw new InvalidPayloadException(InternalMessages.INVALID_TEXT_CONTENT.getMessage(), "HashHandler.handleTextHashing", null);
         }
 
         try {
@@ -81,7 +82,7 @@ public class HashHandler extends BaseHandler {
                     .put("algorithm", algorithm);
 
         } catch (NoSuchAlgorithmException exception) {
-            throw new AlgorithmException("Algorithm was not found", "JobHandler.handleTextHashing", algorithm);
+            throw new AlgorithmException(InternalMessages.ALGORITHM_NOT_FOUND.getMessage(), "JobHandler.handleTextHashing", algorithm);
         }
     }
 
@@ -91,7 +92,7 @@ public class HashHandler extends BaseHandler {
         if (payload.hashA() == null || payload.hashA().isBlank()
                 || payload.hashB() == null || payload.hashB().isBlank()) {
             throw new InvalidPayloadException(
-                    "HashA and HashB must not be null or blank",
+                    InternalMessages.INVALID_HASH_INPUTS.getMessage(),
                     "HashHandler.handleHashComparison",
                     null
             );

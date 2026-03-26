@@ -3,6 +3,7 @@ package com.blikeng.job.executor.handler;
 import com.blikeng.job.executor.exception.AlgorithmException;
 import com.blikeng.job.executor.exception.FileProcessingException;
 import com.blikeng.job.executor.exception.InvalidPayloadException;
+import com.blikeng.job.executor.exception.messages.InternalMessages;
 import com.blikeng.job.executor.payloads.DecryptionPayload;
 import com.blikeng.job.executor.payloads.EncryptionPayload;
 import com.blikeng.job.executor.service.StorageService;
@@ -48,7 +49,7 @@ public class EncryptionHandler extends BaseHandler {
                     .put("key", data.key());
 
         } catch (IOException e) {
-            throw new FileProcessingException("Failed to read file", "EncryptionHandler.handleFileEncryption", e);
+            throw new FileProcessingException(InternalMessages.FAILED_TO_READ_FILE.getMessage(), "EncryptionHandler.handleFileEncryption", e);
         }
     }
 
@@ -56,7 +57,7 @@ public class EncryptionHandler extends BaseHandler {
         DecryptionPayload payload = parsePayload(payloadString, DecryptionPayload.class, "File Decryption");
 
         if (payload.fileId() == null || payload.iv() == null || payload.key() == null) {
-            throw new InvalidPayloadException("fileId, iv and key must not be null", "EncryptionHandler.handleFileDecryption", null);
+            throw new InvalidPayloadException(InternalMessages.INVALID_FILE_CRYPTO_PARAMS.getMessage(), "EncryptionHandler.handleFileDecryption", null);
         }
 
         Path inputPath = getFilePath(payload.fileId(), "File Decryption");
@@ -72,7 +73,7 @@ public class EncryptionHandler extends BaseHandler {
                     .put("file_path", outputPath.getFileName().toString());
 
         } catch (IOException e) {
-            throw new FileProcessingException("File read/write failed", "EncryptionHandler.handleFileDecryption", e);
+            throw new FileProcessingException(InternalMessages.FILE_READ_WRITE_FAILED.getMessage(), "EncryptionHandler.handleFileDecryption", e);
         }
     }
 
@@ -81,7 +82,7 @@ public class EncryptionHandler extends BaseHandler {
 
         String content = payload.content();
         if (content == null || content.isBlank()) {
-            throw new InvalidPayloadException("Content must not be null or empty", "EncryptionHandler.handleTextEncryption", null);
+            throw new InvalidPayloadException(InternalMessages.INVALID_TEXT_CONTENT.getMessage(), "EncryptionHandler.handleTextEncryption", null);
         }
 
         byte[] plainText = content.getBytes(StandardCharsets.UTF_8);
@@ -99,7 +100,7 @@ public class EncryptionHandler extends BaseHandler {
         DecryptionPayload payload = parsePayload(payloadString, DecryptionPayload.class, "Text Decryption");
 
         if (payload.content() == null || payload.iv() == null || payload.key() == null) {
-            throw new InvalidPayloadException("cipherText, iv and key must not be null", "EncryptionHandler.handleTextDecryption" , null);
+            throw new InvalidPayloadException(InternalMessages.INVALID_DECRYPTION_PARAMS.getMessage(), "EncryptionHandler.handleTextDecryption" , null);
         }
 
         byte[] cipherBytes = decodeBase64(payload.content(), "cipherText");
@@ -132,14 +133,14 @@ public class EncryptionHandler extends BaseHandler {
 
         } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
             throw new AlgorithmException(
-                    "Algorithm not found",
+                    InternalMessages.ALGORITHM_NOT_FOUND.getMessage(),
                     "EncryptionHandler.encrypt",
                     "AES/GCM/NoPadding"
             );
         } catch (InvalidKeyException | InvalidAlgorithmParameterException e) {
-            throw new InvalidPayloadException("Invalid encryption key or parameters", "EncryptionHandler.encrypt", e);
+            throw new InvalidPayloadException(InternalMessages.INVALID_KEY_OR_PARAMETERS.getMessage(), "EncryptionHandler.encrypt", e);
         } catch (IllegalBlockSizeException | BadPaddingException e) {
-            throw new FileProcessingException("Encryption failed", "EncryptionHandler.encrypt", e);
+            throw new FileProcessingException(InternalMessages.ENCRYPTION_FAILED.getMessage(), "EncryptionHandler.encrypt", e);
         }
     }
 
@@ -148,7 +149,7 @@ public class EncryptionHandler extends BaseHandler {
         byte[] keyBytes = decodeBase64(base64Key, "Key");
 
         if (!(keyBytes.length == 16 || keyBytes.length == 24 || keyBytes.length == 32)) {
-            throw new InvalidPayloadException("Invalid AES key length", "EncryptionHandler.decrypt", null);
+            throw new InvalidPayloadException(InternalMessages.INVALID_AES_KEY_LENGTH.getMessage(), "EncryptionHandler.decrypt", null);
         }
 
         try {
@@ -162,23 +163,23 @@ public class EncryptionHandler extends BaseHandler {
 
         } catch (AEADBadTagException e) {
             throw new FileProcessingException(
-                    "Decryption failed: authentication error (wrong key/iv/data)",
+                    InternalMessages.DECRYPTION_FAILED_AUTH_ERROR.getMessage(),
                     "EncryptionHandler.decrypt",
                     e
             );
 
         } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
             throw new AlgorithmException(
-                    "Algorithm not found",
+                    InternalMessages.ALGORITHM_NOT_FOUND.getMessage(),
                     "EncryptionHandler.decrypt",
                     "AES/GCM/NoPadding"
             );
 
         } catch (InvalidKeyException | InvalidAlgorithmParameterException e) {
-            throw new InvalidPayloadException("Invalid decryption key or parameters", "EncryptionHandler.decrypt", e);
+            throw new InvalidPayloadException(InternalMessages.INVALID_KEY_OR_PARAMETERS.getMessage(), "EncryptionHandler.decrypt", e);
 
         } catch (IllegalBlockSizeException | BadPaddingException e) {
-            throw new FileProcessingException("Decryption failed", "EncryptionHandler.decrypt", e);
+            throw new FileProcessingException(InternalMessages.DECRYPTION_FAILED.getMessage(), "EncryptionHandler.decrypt", e);
         }
     }
 
@@ -191,11 +192,11 @@ public class EncryptionHandler extends BaseHandler {
         try {
             keyBytes = Base64.getDecoder().decode(base64Key.trim());
         } catch (IllegalArgumentException e) {
-            throw new InvalidPayloadException("Invalid Base64 key", "EncryptionHandler.resolveAesKey", e);
+            throw new InvalidPayloadException(InternalMessages.INVALID_BASE64.getMessage(), "EncryptionHandler.resolveAesKey", e);
         }
 
         if (keyBytes.length != 16 && keyBytes.length != 24 && keyBytes.length != 32) {
-            throw new InvalidPayloadException("Invalid AES key length", "EncryptionHandler.resolveAesKey", null);
+            throw new InvalidPayloadException(InternalMessages.INVALID_AES_KEY_LENGTH.getMessage(), "EncryptionHandler.resolveAesKey", null);
         }
 
         return keyBytes;
@@ -211,7 +212,7 @@ public class EncryptionHandler extends BaseHandler {
         try {
             return Base64.getDecoder().decode(value.trim());
         } catch (IllegalArgumentException e) {
-            throw new InvalidPayloadException(field + " is not valid Base64", "EncryptionHandler.decodeBase64", e);
+            throw new InvalidPayloadException(InternalMessages.INVALID_BASE64.getMessage(), "EncryptionHandler.decodeBase64: " + field, e);
         }
     }
 

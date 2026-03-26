@@ -1,6 +1,7 @@
 package com.blikeng.job.executor.handler;
 
 import com.blikeng.job.executor.exception.InvalidPayloadException;
+import com.blikeng.job.executor.exception.messages.InternalMessages;
 import com.blikeng.job.executor.service.StorageService;
 import tools.jackson.databind.ObjectMapper;
 
@@ -19,7 +20,7 @@ public abstract class BaseHandler {
         try {
             return objectMapper.readValue(payloadString, type);
         } catch (Exception e) {
-            throw new InvalidPayloadException("Invalid payload", context, e);
+            throw new InvalidPayloadException(InternalMessages.INVALID_PAYLOAD.getMessage(), context, e);
         }
     }
 
@@ -27,7 +28,7 @@ public abstract class BaseHandler {
         try {
             return storageService.getPath(fileId);
         } catch (Exception e) {
-            throw new InvalidPayloadException("Invalid fileId" + context, context, e);
+            throw new InvalidPayloadException(InternalMessages.FILE_NOT_FOUND.getMessage(), context, e);
         }
     }
 }

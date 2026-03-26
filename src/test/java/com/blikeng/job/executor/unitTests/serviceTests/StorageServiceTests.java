@@ -1,6 +1,6 @@
 package com.blikeng.job.executor.unitTests.serviceTests;
 
-import com.blikeng.job.executor.exception.Http.ApiException;
+import com.blikeng.job.executor.exception.http.ApiException;
 import com.blikeng.job.executor.service.StorageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

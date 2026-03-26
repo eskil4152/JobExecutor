@@ -1,7 +1,7 @@
 package com.blikeng.job.executor.unitTests.controllerTests;
 
 import com.blikeng.job.executor.controller.FileController;
-import com.blikeng.job.executor.exception.Http.ApiException;
+import com.blikeng.job.executor.exception.http.ApiException;
 import com.blikeng.job.executor.service.StorageService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

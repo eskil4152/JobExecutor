@@ -1,6 +1,7 @@
 package com.blikeng.job.executor.metadata.video;
 
 import com.blikeng.job.executor.exception.MetadataException;
+import com.blikeng.job.executor.exception.messages.InternalMessages;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
@@ -51,10 +52,10 @@ public class VideoMetadataExtractor {
 
             parseProbeResult(output, result);
         } catch (IOException exception) {
-            throw new MetadataException("Error reading video metadata", "VideoMetadataExtractor.extract", exception);
+            throw new MetadataException(InternalMessages.FAILED_TO_READ_VIDEO_METADATA.getMessage(), "VideoMetadataExtractor.extract", exception);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            throw new MetadataException("Metadata extraction interrupted", "VideoMetadataExtractor.extract", exception);
+            throw new MetadataException(InternalMessages.METADATA_EXTRACTION_INTERRUPTED.getMessage(), "VideoMetadataExtractor.extract", exception);
         }
     }
 

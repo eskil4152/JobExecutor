@@ -1,6 +1,7 @@
 package com.blikeng.job.executor.metadata;
 
 import com.blikeng.job.executor.exception.MetadataException;
+import com.blikeng.job.executor.exception.messages.InternalMessages;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
@@ -18,7 +19,7 @@ public class GeneralMetadata {
             attributes = Files.readAttributes(path, BasicFileAttributes.class);
             posixAttributes = Files.readAttributes(path, PosixFileAttributes.class);
         } catch (IOException exception) {
-            throw new MetadataException("Failed to read file attributes", "GeneralMetadata.getGeneralData", exception);
+            throw new MetadataException(InternalMessages.FAILED_TO_READ_FILE_ATTRIBUTES.getMessage(), "GeneralMetadata.getGeneralData", exception);
         }
 
         current.put("name", path.getFileName().toString());

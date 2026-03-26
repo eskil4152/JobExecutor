@@ -1,6 +1,7 @@
 package com.blikeng.job.executor.metadata.text;
 
 import com.blikeng.job.executor.exception.MetadataException;
+import com.blikeng.job.executor.exception.messages.InternalMessages;
 import org.apache.tika.Tika;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -23,7 +24,7 @@ public class TextMetadataExtractor {
         try {
              content = tika.parseToString(path);
         } catch (IOException | TikaException e) {
-            throw new MetadataException("Failed to read file", "TextMetadataExtractor.extract", e);
+            throw new MetadataException(InternalMessages.FAILED_TO_READ_FILE.getMessage(), "TextMetadataExtractor.extract", e);
         }
 
         result.put("category", "text");
@@ -37,7 +38,7 @@ public class TextMetadataExtractor {
         try (InputStream stream = Files.newInputStream(path)) {
             parser.parse(stream, new BodyContentHandler(), metadata, new ParseContext());
         } catch (Exception e) {
-            throw new MetadataException("Failed to parse text metadata", "TextMetadataExtractor.extract", e);
+            throw new MetadataException(InternalMessages.FAILED_TO_PARSE_TEXT_METADATA.getMessage(), "TextMetadataExtractor.extract", e);
         }
 
         for (String name : metadata.names()) {

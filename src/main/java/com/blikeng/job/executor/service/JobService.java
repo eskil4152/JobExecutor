@@ -3,7 +3,8 @@ package com.blikeng.job.executor.service;
 import com.blikeng.job.executor.domain.JobEntity;
 import com.blikeng.job.executor.dto.JobDTO;
 import com.blikeng.job.executor.dto.JobResponseDTO;
-import com.blikeng.job.executor.exception.Http.ApiException;
+import com.blikeng.job.executor.exception.http.ApiException;
+import com.blikeng.job.executor.exception.messages.ApiMessages;
 import com.blikeng.job.executor.repository.JobRepository;
 import com.blikeng.job.executor.worker.JobTask;
 import com.blikeng.job.executor.worker.WorkerManager;
@@ -35,7 +36,7 @@ public class JobService {
 
     public UUID receiveTask(JobDTO jobDTO){
         if (jobDTO.jobType() == null || jobDTO.payload() == null) {
-            throw new ApiException("Job type and payload are required", HttpStatus.BAD_REQUEST);
+            throw new ApiException(ApiMessages.JOB_TYPE_AND_PAYLOAD_REQUIRED.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
         try {
@@ -49,7 +50,7 @@ public class JobService {
 
             return job.getId();
         } catch (JacksonException e) {
-            throw new ApiException("Failed to create job from request payload", HttpStatus.BAD_REQUEST);
+            throw new ApiException(ApiMessages.JOB_CREATION_FAILED.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -58,7 +59,7 @@ public class JobService {
             UUID uuid = UUID.fromString(id);
 
             JobEntity job = jobRepository.findById(uuid)
-                    .orElseThrow(() -> new ApiException("Requested job was not found", HttpStatus.NOT_FOUND));
+                    .orElseThrow(() -> new ApiException(ApiMessages.JOB_NOT_FOUND.getMessage(), HttpStatus.NOT_FOUND));
 
             String payloadTemp = job.getPayload();
             String resultTemp = job.getResult();
@@ -77,9 +78,9 @@ public class JobService {
                     job.getJobFinished()
             );
         } catch (JacksonException e) {
-            throw new ApiException("Failed to read stored job data", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new ApiException(ApiMessages.JOB_READ_FAILED.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (IllegalArgumentException e) {
-            throw new ApiException("Invalid UUID", HttpStatus.BAD_REQUEST);
+            throw new ApiException(ApiMessages.INVALID_UUID.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 }

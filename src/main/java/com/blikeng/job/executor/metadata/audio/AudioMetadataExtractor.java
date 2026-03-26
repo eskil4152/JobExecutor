@@ -1,6 +1,7 @@
 package com.blikeng.job.executor.metadata.audio;
 
 import com.blikeng.job.executor.exception.MetadataException;
+import com.blikeng.job.executor.exception.messages.InternalMessages;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.AudioHeader;
@@ -22,7 +23,7 @@ public class AudioMetadataExtractor {
         try {
             audioFile = AudioFileIO.read(file);
         } catch (Exception e) {
-            throw new MetadataException("Failed to read audio file", "AudioMetadataExtractor.extract", e);
+            throw new MetadataException(InternalMessages.FAILED_TO_READ_AUDIO_FILE.getMessage(), "AudioMetadataExtractor.extract", e);
         }
 
         Tag tag = audioFile.getTag();

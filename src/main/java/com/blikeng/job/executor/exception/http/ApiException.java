@@ -1,4 +1,4 @@
-package com.blikeng.job.executor.exception.Http;
+package com.blikeng.job.executor.exception.http;
 
 import org.springframework.http.HttpStatus;
 

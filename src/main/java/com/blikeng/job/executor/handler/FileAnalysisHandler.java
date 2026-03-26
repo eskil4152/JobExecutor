@@ -1,6 +1,7 @@
 package com.blikeng.job.executor.handler;
 
 import com.blikeng.job.executor.exception.FileProcessingException;
+import com.blikeng.job.executor.exception.messages.InternalMessages;
 import com.blikeng.job.executor.payloads.FilePayload;
 import com.blikeng.job.executor.service.StorageService;
 import org.springframework.stereotype.Service;
@@ -40,7 +41,7 @@ public class FileAnalysisHandler extends BaseHandler {
         try {
             return Files.readString(path);
         } catch (IOException e) {
-            throw new FileProcessingException("Unable to read file contents", "FileAnalysisHandler.readFileContent", e);
+            throw new FileProcessingException(InternalMessages.FAILED_TO_READ_FILE.getMessage(), "FileAnalysisHandler.readFileContent", e);
         }
     }
 }

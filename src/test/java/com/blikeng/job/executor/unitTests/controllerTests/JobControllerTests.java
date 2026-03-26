@@ -5,7 +5,7 @@ import com.blikeng.job.executor.domain.JobStatus;
 import com.blikeng.job.executor.domain.JobType;
 import com.blikeng.job.executor.dto.JobDTO;
 import com.blikeng.job.executor.dto.JobResponseDTO;
-import com.blikeng.job.executor.exception.Http.ApiException;
+import com.blikeng.job.executor.exception.http.ApiException;
 import com.blikeng.job.executor.service.JobService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

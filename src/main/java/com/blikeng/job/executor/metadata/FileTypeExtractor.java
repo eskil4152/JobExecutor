@@ -1,6 +1,7 @@
 package com.blikeng.job.executor.metadata;
 
 import com.blikeng.job.executor.exception.MetadataException;
+import com.blikeng.job.executor.exception.messages.InternalMessages;
 import com.blikeng.job.executor.metadata.application.ApplicationMetadataExtractor;
 import com.blikeng.job.executor.metadata.audio.AudioMetadataExtractor;
 import com.blikeng.job.executor.metadata.image.ImageMetadataExtractor;
@@ -21,7 +22,7 @@ public class FileTypeExtractor {
         try {
              contentType = tika.detect(path);
         } catch (IOException e) {
-            throw new MetadataException("Failed to detect file type", "FileTypeExtractor.findFileType", e);
+            throw new MetadataException(InternalMessages.FAILED_TO_DETECT_FILE_TYPE.getMessage(), "FileTypeExtractor.findFileType", e);
         }
 
         String[] parts = contentType.split("/");
