@@ -50,7 +50,7 @@ public class JobExecutionService {
         JobEntity job = jobRepository.findById(jobId)
             .orElseThrow(() -> {
                 logger.error("Job {} not found", jobId);
-                return new JobException("Job not found", jobId.toString());
+                return new JobException("Job not found");
             });
 
         logger.info("Executing job {} of type {}", jobId, job.getJobType());

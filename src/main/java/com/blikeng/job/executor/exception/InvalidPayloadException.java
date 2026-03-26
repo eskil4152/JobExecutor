@@ -4,7 +4,7 @@ public class InvalidPayloadException extends RuntimeException {
     private final String location;
 
   public InvalidPayloadException(String message, String location, Throwable cause) {
-      super(message);
+      super(message, cause);
       this.location = location;
   }
 

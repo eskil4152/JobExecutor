@@ -55,7 +55,7 @@ public class HashHandler extends BaseHandler {
             throw new FileProcessingException(InternalMessages.FAILED_TO_READ_FILE.getMessage(), "HashHandler.handleFileHashing", e);
 
         } catch (NoSuchAlgorithmException exception) {
-            throw new AlgorithmException(InternalMessages.ALGORITHM_NOT_FOUND.getMessage(), "JobHandler.handleFileHashing", algorithm);
+            throw new AlgorithmException(InternalMessages.ALGORITHM_NOT_FOUND.getMessage(), "JobHandler.handleFileHashing", algorithm, exception);
         }
     }
 
@@ -82,7 +82,7 @@ public class HashHandler extends BaseHandler {
                     .put("algorithm", algorithm);
 
         } catch (NoSuchAlgorithmException exception) {
-            throw new AlgorithmException(InternalMessages.ALGORITHM_NOT_FOUND.getMessage(), "JobHandler.handleTextHashing", algorithm);
+            throw new AlgorithmException(InternalMessages.ALGORITHM_NOT_FOUND.getMessage(), "JobHandler.handleTextHashing", algorithm, exception);
         }
     }
 

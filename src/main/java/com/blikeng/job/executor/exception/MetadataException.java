@@ -4,7 +4,7 @@ public class MetadataException extends RuntimeException {
     private final String location;
 
     public MetadataException(String message, String location, Throwable cause) {
-        super(message);
+        super(message, cause);
         this.location = location;
     }
 

@@ -386,7 +386,7 @@ public class JobExecutionServiceTests {
                 """);
         when(jobRepository.findById(job.getId())).thenReturn(Optional.of(job));
         when(hashHandler.handleTextHashing(any()))
-                .thenThrow(new AlgorithmException("Algorithm not found", "HashHandler", "INVALID"));
+                .thenThrow(new AlgorithmException("Algorithm not found", "HashHandler", "INVALID", null));
 
         jobExecutionService.execute(job.getId());
 

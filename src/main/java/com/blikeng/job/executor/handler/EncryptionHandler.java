@@ -137,7 +137,8 @@ public class EncryptionHandler extends BaseHandler {
             throw new AlgorithmException(
                     InternalMessages.ALGORITHM_NOT_FOUND.getMessage(),
                     "EncryptionHandler.encrypt",
-                    AES_GCM_NO_PADDING
+                    AES_GCM_NO_PADDING,
+                    e
             );
         } catch (InvalidKeyException | InvalidAlgorithmParameterException e) {
             throw new InvalidPayloadException(InternalMessages.INVALID_KEY_OR_PARAMETERS.getMessage(), "EncryptionHandler.encrypt", e);
@@ -174,7 +175,8 @@ public class EncryptionHandler extends BaseHandler {
             throw new AlgorithmException(
                     InternalMessages.ALGORITHM_NOT_FOUND.getMessage(),
                     "EncryptionHandler.decrypt",
-                    AES_GCM_NO_PADDING
+                    AES_GCM_NO_PADDING,
+                    e
             );
 
         } catch (InvalidKeyException | InvalidAlgorithmParameterException e) {
