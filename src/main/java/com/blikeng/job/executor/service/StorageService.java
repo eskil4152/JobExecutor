@@ -21,7 +21,7 @@ public class StorageService {
     private final Path storagePath;
 
     public StorageService(@Value("${storage.path:./uploads}") String storagePath) throws IOException {
-        this.storagePath = Paths.get(storagePath);
+        this.storagePath = Paths.get(storagePath).toAbsolutePath().normalize();
         Files.createDirectories(this.storagePath);
     }
 
@@ -36,7 +36,12 @@ public class StorageService {
 
     public Resource getFile(String fileId) {
         try {
-            Path path = getPath(fileId);
+            Path path = getPath(fileId).normalize();
+
+            if (!path.startsWith(storagePath)) {
+                throw new ApiException("URL not valid", HttpStatus.BAD_REQUEST);
+            }
+
             Resource resource = new UrlResource(path.toUri());
 
             if (!resource.exists()) {
@@ -53,10 +58,6 @@ public class StorageService {
     }
 
     public Path getPath(String id){
-        try {
-            return storagePath.resolve(id);
-        } catch (Exception e) {
-            return null;
-        }
+        return storagePath.resolve(id);
     }
 }

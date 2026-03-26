@@ -58,7 +58,7 @@ public class JobExecutionService {
         job.markJobStarted();
         jobRepository.save(job);
 
-        JsonNode result;
+        JsonNode result = null;
 
         try {
             switch (job.getJobType()) {
@@ -81,11 +81,6 @@ public class JobExecutionService {
                 case DECRYPT_FILE -> result = encryptionHandler.handleFileDecryption(job.getPayload());
                 case ENCRYPT_TEXT -> result = encryptionHandler.handleTextEncryption(job.getPayload());
                 case DECRYPT_TEXT -> result = encryptionHandler.handleTextDecryption(job.getPayload());
-
-                default -> {
-                    logger.error("Job type {} not supported", job.getJobType());
-                    throw new JobException("Job type not supported", null);
-                }
             }
 
             String resultString = objectMapper.writeValueAsString(result);
