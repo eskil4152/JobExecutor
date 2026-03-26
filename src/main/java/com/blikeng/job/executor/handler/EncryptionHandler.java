@@ -29,6 +29,8 @@ public class EncryptionHandler extends BaseHandler {
     public EncryptionHandler(ObjectMapper objectMapper, StorageService storageService) {
         super(objectMapper, storageService);
     }
+    
+    private final String AES_GCM_NO_PADDING = "AES/GCM/NoPadding";
 
     public JsonNode handleFileEncryption(String payloadString) {
         EncryptionPayload payload = parsePayload(payloadString, EncryptionPayload.class, "File Encryption");
@@ -118,14 +120,14 @@ public class EncryptionHandler extends BaseHandler {
         try {
             byte[] iv = generateRandomBytes(12);
 
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            Cipher cipher = Cipher.getInstance(AES_GCM_NO_PADDING);
             GCMParameterSpec spec = new GCMParameterSpec(128, iv);
             cipher.init(Cipher.ENCRYPT_MODE, key, spec);
 
             byte[] cipherBytes = cipher.doFinal(plainText);
 
             return new EncryptionData(
-                    "AES/GCM/NoPadding",
+                    AES_GCM_NO_PADDING,
                     cipherBytes,
                     Base64.getEncoder().encodeToString(iv),
                     Base64.getEncoder().encodeToString(keyBytes)
@@ -135,7 +137,7 @@ public class EncryptionHandler extends BaseHandler {
             throw new AlgorithmException(
                     InternalMessages.ALGORITHM_NOT_FOUND.getMessage(),
                     "EncryptionHandler.encrypt",
-                    "AES/GCM/NoPadding"
+                    AES_GCM_NO_PADDING
             );
         } catch (InvalidKeyException | InvalidAlgorithmParameterException e) {
             throw new InvalidPayloadException(InternalMessages.INVALID_KEY_OR_PARAMETERS.getMessage(), "EncryptionHandler.encrypt", e);
@@ -153,7 +155,7 @@ public class EncryptionHandler extends BaseHandler {
         }
 
         try {
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            Cipher cipher = Cipher.getInstance(AES_GCM_NO_PADDING);
             SecretKey key = new SecretKeySpec(keyBytes, "AES");
 
             GCMParameterSpec spec = new GCMParameterSpec(128, iv);
@@ -172,7 +174,7 @@ public class EncryptionHandler extends BaseHandler {
             throw new AlgorithmException(
                     InternalMessages.ALGORITHM_NOT_FOUND.getMessage(),
                     "EncryptionHandler.decrypt",
-                    "AES/GCM/NoPadding"
+                    AES_GCM_NO_PADDING
             );
 
         } catch (InvalidKeyException | InvalidAlgorithmParameterException e) {

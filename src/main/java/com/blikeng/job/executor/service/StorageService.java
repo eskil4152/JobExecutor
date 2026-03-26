@@ -27,8 +27,15 @@ public class StorageService {
     }
 
     public String store(MultipartFile file) throws IOException {
-        String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-        Path destination = storagePath.resolve(filename);
+        String original = file.getOriginalFilename();
+        String safeName = (original == null || original.isBlank())
+                ? "file"
+                : Path.of(original).getFileName().toString();
+
+        safeName = safeName.replaceAll("[^a-zA-Z0-9._-]", "_");
+
+        String filename = UUID.randomUUID() + "_" + safeName;
+        Path destination = storagePath.resolve(filename).normalize();
 
         Files.copy(file.getInputStream(), destination);
 

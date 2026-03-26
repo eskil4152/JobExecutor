@@ -148,18 +148,46 @@ public class CompressionHandler extends BaseHandler {
 
     private Path resolveSafeZipOutputPath(Path zipPath, ZipEntry zipEntry) {
         if (zipEntry == null) {
-            throw new FileProcessingException(InternalMessages.ZIP_IS_EMPTY.getMessage(), "CompressionHandler.resolveSafeZipOutputPath", null);
+            throw new FileProcessingException(
+                    InternalMessages.ZIP_IS_EMPTY.getMessage(),
+                    "CompressionHandler.resolveSafeZipOutputPath",
+                    null
+            );
         }
 
         if (zipEntry.isDirectory()) {
-            throw new FileProcessingException(InternalMessages.ZIP_ENTRY_IS_DIRECTORY.getMessage(), "CompressionHandler.resolveSafeZipOutputPath", null);
+            throw new FileProcessingException(
+                    InternalMessages.ZIP_ENTRY_IS_DIRECTORY.getMessage(),
+                    "CompressionHandler.resolveSafeZipOutputPath",
+                    null
+            );
         }
 
-        Path outputPath = zipPath.resolveSibling(zipEntry.getName()).normalize();
-        Path parent = outputPath.getParent();
+        Path targetDir = zipPath.getParent();
+        if (targetDir == null) {
+            throw new FileProcessingException(
+                    InternalMessages.INVALID_ZIP_ENTRY_PATH.getMessage(),
+                    "CompressionHandler.resolveSafeZipOutputPath",
+                    null
+            );
+        }
 
-        if (parent == null || !parent.equals(zipPath.getParent())) {
-            throw new FileProcessingException(InternalMessages.INVALID_ZIP_ENTRY_PATH.getMessage(), "CompressionHandler.resolveSafeZipOutputPath", null);
+        Path outputPath = targetDir.resolve(zipEntry.getName()).normalize();
+
+        if (!outputPath.startsWith(targetDir)) {
+            throw new FileProcessingException(
+                    InternalMessages.INVALID_ZIP_ENTRY_PATH.getMessage(),
+                    "CompressionHandler.resolveSafeZipOutputPath",
+                    null
+            );
+        }
+
+        if (outputPath.equals(targetDir)) {
+            throw new FileProcessingException(
+                    InternalMessages.INVALID_ZIP_ENTRY_PATH.getMessage(),
+                    "CompressionHandler.resolveSafeZipOutputPath",
+                    null
+            );
         }
 
         return outputPath;
