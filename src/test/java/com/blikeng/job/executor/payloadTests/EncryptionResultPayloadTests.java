@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class EncryptionResultPayloadTests {
+class EncryptionResultPayloadTests {
     @Test
     void shouldBeEqualWhenByteArrayContentsMatch() {
         byte[] a1 = new byte[]{1, 2, 3};

@@ -221,7 +221,7 @@ public class CompressionHandler extends BaseHandler {
         long maxBytes = maxDecompressedSize.toBytes();
         long allowedMax = (compressedSize <= 0)
                 ? maxBytes
-                : Math.min(maxBytes, compressedSize * (long) maxExpansionRatio);
+                : Math.min(maxBytes, compressedSize * maxExpansionRatio);
 
         while ((read = in.read(buffer)) != -1) {
             totalWritten += read;
@@ -261,6 +261,7 @@ public class CompressionHandler extends BaseHandler {
     }
 
     private void ensureSingleEntry(ZipInputStream zipIn, String location) throws IOException {
+        // Safe: first entry validated earlier, extraction is size-limited, only one entry allowed
         if (zipIn.getNextEntry() != null) {
             throw new FileProcessingException(
                     InternalMessages.ZIP_FILE_CONTAINS_MULTIPLE_ENTRIES.getMessage(),
