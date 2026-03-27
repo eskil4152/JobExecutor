@@ -27,6 +27,7 @@ Clients submit jobs via a REST API and receive a job ID immediately. Jobs are ex
   - [Metadata Extraction](#metadata-extraction)
   - [File Analysis](#file-analysis)
   - [Error Handling](#error-handling)
+- [CI](#ci)
 - [API Overview](#api-overview)
 - [Job Types & Payloads](#job-types--payloads)
 
@@ -114,6 +115,7 @@ Jobs are accepted immediately and processed asynchronously. Job execution never 
 - Text strings can be compressed to a ZIP and returned as a **Base64-encoded** string and decompressed back from Base64.
 - File decompression enforces single-entry ZIPs only — archives with multiple entries are rejected.
 - A path traversal check is applied during decompression to ensure extracted files cannot escape the storage directory.
+- Decompression enforces a configurable maximum output size and expansion ratio to protect against zip bomb attacks.
 
 ---
 
@@ -179,6 +181,16 @@ There are two distinct layers of error handling:
 | `MetadataException`       | Failure during metadata extraction                 |
 | `AlgorithmException`      | Unsupported or invalid cryptographic algorithm     |
 | `JobException`            | Job not found or unsupported job type              |
+
+---
+
+## CI
+
+On every push and pull request to `main`, a GitHub Actions workflow runs on a self-hosted runner and:
+
+- Compiles the project with Java 24
+- Runs the full test suite (`mvn clean verify`)
+- Reports coverage and code quality results to SonarCloud
 
 ---
 
