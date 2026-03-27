@@ -9,9 +9,9 @@ import com.blikeng.job.executor.repository.JobRepository;
 import com.blikeng.job.executor.worker.JobTask;
 import com.blikeng.job.executor.worker.WorkerManager;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
-import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
@@ -63,9 +63,6 @@ public class JobService {
 
             String payloadTemp = job.getPayload();
             String resultTemp = job.getResult();
-
-            System.out.println("PAYLOAD: " + payloadTemp);
-            System.out.println("RESULT: " + resultTemp);
 
             return new JobResponseDTO(
                     id,

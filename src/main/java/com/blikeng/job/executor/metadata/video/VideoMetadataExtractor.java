@@ -12,6 +12,11 @@ import java.nio.file.Path;
 import java.util.Map;
 
 public class VideoMetadataExtractor {
+
+    private VideoMetadataExtractor() {
+        /* This utility class should not be instantiated */
+    }
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public static void extract(Path path, ObjectNode result) {

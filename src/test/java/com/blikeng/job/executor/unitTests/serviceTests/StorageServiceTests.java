@@ -5,19 +5,21 @@ import com.blikeng.job.executor.service.StorageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class StorageServiceTests {
+@SpringBootTest
+class StorageServiceTests {
     // ==========================
     // Tests for StorageService. Verifies:
     // - Uploaded file is stored and retrievable by returned ID
@@ -56,7 +58,7 @@ public class StorageServiceTests {
         String id = storageService.store(file);
 
         byte[] content = storageService.getFile(id).getInputStream().readAllBytes();
-        assert Arrays.equals(content, "Hello, world!".getBytes());
+        assertEquals("Hello, world!".getBytes(), content);
     }
 
     // ==========================
@@ -74,7 +76,8 @@ public class StorageServiceTests {
 
     @Test
     void shouldThrowNotFoundForUnknownFileId() {
-        assertThatThrownBy(() -> storageService.getFile(UUID.randomUUID().toString()))
+        String id = UUID.randomUUID().toString();
+        assertThatThrownBy(() -> storageService.getFile(id))
                 .isInstanceOf(ApiException.class);
     }
 

@@ -2,10 +2,10 @@ package com.blikeng.job.executor.service;
 
 import com.blikeng.job.executor.exception.http.ApiException;
 import com.blikeng.job.executor.exception.messages.ApiMessages;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 

@@ -30,7 +30,7 @@ public class FileTypeExtractor {
 
         switch (fileType) {
             case "text" -> TextMetadataExtractor.extract(path, result);
-            case "application" -> ApplicationMetadataExtractor.extract(path, result);
+            case "application" -> ApplicationMetadataExtractor.extract(result);
             case "image" -> ImageMetadataExtractor.extract(path, result);
             case "video" -> VideoMetadataExtractor.extract(path, result);
             case "audio" -> AudioMetadataExtractor.extract(path, result);

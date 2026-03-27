@@ -13,6 +13,11 @@ import java.io.File;
 import java.nio.file.Path;
 
 public class AudioMetadataExtractor {
+
+    private AudioMetadataExtractor(){
+        /* This utility class should not be instantiated */
+    }
+
     public static void extract(Path path, ObjectNode result) {
         File file = path.toFile();
         result.put("category", "audio");

@@ -13,6 +13,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public class ImageMetadataExtractor {
+
+    private ImageMetadataExtractor(){
+        /* This utility class should not be instantiated */
+    }
+
     public static void extract(Path path, ObjectNode result) {
         Metadata metadata;
 

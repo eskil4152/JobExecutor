@@ -18,14 +18,12 @@ import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class EncryptionHandlerTests {
+class EncryptionHandlerTests {
     // ==========================
     // Tests for EncryptionHandler. Verifies:
     // - Text encryption returns ciphertext, iv, key, algorithm
@@ -106,15 +104,17 @@ public class EncryptionHandlerTests {
 
     @Test
     void shouldThrowInvalidPayloadForNullContent() {
+        String key = validAes256Key();
         assertThatThrownBy(() -> encryptionHandler.handleTextEncryption(
-                "{\"content\": null, \"key\": \"" + validAes256Key() + "\"}"))
+                "{\"content\": null, \"key\": \"" + key + "\"}"))
                 .isInstanceOf(InvalidPayloadException.class);
     }
 
     @Test
     void shouldThrowInvalidPayloadForBlankContent() {
+        String key = validAes256Key();
         assertThatThrownBy(() -> encryptionHandler.handleTextEncryption(
-                "{\"content\": \"   \", \"key\": \"" + validAes256Key() + "\"}"))
+                "{\"content\": \"   \", \"key\": \"" + key + "\"}"))
                 .isInstanceOf(InvalidPayloadException.class);
     }
 
@@ -196,15 +196,19 @@ public class EncryptionHandlerTests {
 
     @Test
     void shouldThrowInvalidPayloadWhenContentIsNull() {
+        String key = validAes256Key();
+
         assertThatThrownBy(() -> encryptionHandler.handleTextDecryption(
-                "{\"content\": null, \"iv\": \"aGVsbG8=\", \"key\": \"" + validAes256Key() + "\"}"))
+                "{\"content\": null, \"iv\": \"aGVsbG8=\", \"key\": \"" + key + "\"}"))
                 .isInstanceOf(InvalidPayloadException.class);
     }
 
     @Test
     void shouldThrowInvalidPayloadWhenIvIsNull() {
+        String key = validAes256Key();
+
         assertThatThrownBy(() -> encryptionHandler.handleTextDecryption(
-                "{\"content\": \"aGVsbG8=\", \"iv\": null, \"key\": \"" + validAes256Key() + "\"}"))
+                "{\"content\": \"aGVsbG8=\", \"iv\": null, \"key\": \"" + key + "\"}"))
                 .isInstanceOf(InvalidPayloadException.class);
     }
 
@@ -238,8 +242,10 @@ public class EncryptionHandlerTests {
 
     @Test
     void shouldThrowInvalidPayloadForInvalidBase64CipherText() {
+        String key = validAes256Key();
+
         assertThatThrownBy(() -> encryptionHandler.handleTextDecryption(
-                "{\"content\": \"not-base64!!!\", \"iv\": \"aGVsbG8=\", \"key\": \"" + validAes256Key() + "\"}"))
+                "{\"content\": \"not-base64!!!\", \"iv\": \"aGVsbG8=\", \"key\": \"" + key + "\"}"))
                 .isInstanceOf(InvalidPayloadException.class);
     }
 
@@ -319,15 +325,19 @@ public class EncryptionHandlerTests {
 
     @Test
     void shouldThrowInvalidPayloadWhenFileIdIsNull() {
+        String key = validAes256Key();
+
         assertThatThrownBy(() -> encryptionHandler.handleFileDecryption(
-                "{\"fileId\": null, \"iv\": \"aGVsbG8=\", \"key\": \"" + validAes256Key() + "\"}"))
+                "{\"fileId\": null, \"iv\": \"aGVsbG8=\", \"key\": \"" + key + "\"}"))
                 .isInstanceOf(InvalidPayloadException.class);
     }
 
     @Test
     void shouldThrowInvalidPayloadWhenFileDecryptionIvIsNull() {
+        String key = validAes256Key();
+
         assertThatThrownBy(() -> encryptionHandler.handleFileDecryption(
-                "{\"fileId\": \"aGVsbG8=\", \"iv\": null, \"key\": \"" + validAes256Key() + "\"}"))
+                "{\"fileId\": \"aGVsbG8=\", \"iv\": null, \"key\": \"" + key + "\"}"))
                 .isInstanceOf(InvalidPayloadException.class);
     }
 
@@ -340,11 +350,13 @@ public class EncryptionHandlerTests {
 
     @Test
     void shouldThrowFileProcessingExceptionForMissingFileOnDecryption() {
+        String key = validAes256Key();
+
         Path nonExistent = tempDir.resolve("missing.enc");
         when(storageService.getPath(anyString())).thenReturn(nonExistent);
 
         assertThatThrownBy(() -> encryptionHandler.handleFileDecryption(
-                "{\"fileId\": \"enc-id\", \"iv\": \"aGVsbG8=\", \"key\": \"" + validAes256Key() + "\"}"))
+                "{\"fileId\": \"enc-id\", \"iv\": \"aGVsbG8=\", \"key\": \"" + key + "\"}"))
                 .isInstanceOf(FileProcessingException.class);
     }
 
@@ -374,6 +386,7 @@ public class EncryptionHandlerTests {
 
     @Test
     void shouldThrowFileProcessingExceptionForWrongKeyOnFileDecryption() throws Exception {
+        String key = validAes256Key();
         Path file = tempDir.resolve("plain.txt");
         Files.writeString(file, "hello");
         when(storageService.getPath("plain-id")).thenReturn(file);
@@ -389,7 +402,7 @@ public class EncryptionHandlerTests {
         when(storageService.getPath("enc-id")).thenReturn(encFile);
 
         assertThatThrownBy(() -> encryptionHandler.handleFileDecryption(
-                "{\"fileId\": \"enc-id\", \"iv\": \"" + iv + "\", \"key\": \"" + validAes256Key() + "\"}"))
+                "{\"fileId\": \"enc-id\", \"iv\": \"" + iv + "\", \"key\": \"" + key + "\"}"))
                 .isInstanceOf(FileProcessingException.class);
     }
 }

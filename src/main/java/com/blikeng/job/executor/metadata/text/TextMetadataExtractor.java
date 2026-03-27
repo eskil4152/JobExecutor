@@ -17,6 +17,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class TextMetadataExtractor {
+
+    private TextMetadataExtractor(){
+        /* This utility class should not be instantiated */
+    }
+
     public static void extract(Path path, ObjectNode result) {
         Tika tika = new Tika();
         String content;

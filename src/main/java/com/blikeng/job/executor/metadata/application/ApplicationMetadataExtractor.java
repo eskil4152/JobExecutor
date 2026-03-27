@@ -2,10 +2,13 @@ package com.blikeng.job.executor.metadata.application;
 
 import tools.jackson.databind.node.ObjectNode;
 
-import java.nio.file.Path;
-
 public class ApplicationMetadataExtractor {
-    public static void extract(Path path, ObjectNode result) {
+
+    private ApplicationMetadataExtractor() {
+        /* This utility class should not be instantiated */
+    }
+
+    public static void extract(ObjectNode result) {
         result.put("category", "application");
     }
 }

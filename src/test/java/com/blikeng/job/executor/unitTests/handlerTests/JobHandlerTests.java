@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(MockitoExtension.class)
-public class JobHandlerTests {
+class JobHandlerTests {
     // ==========================
     // Tests for JobHandler. Verifies:
     // - ADD_NUMBERS returns correct sum
@@ -88,7 +88,7 @@ public class JobHandlerTests {
                 }
                 """);
 
-        assertThat(result.get("words").asInt()).isEqualTo(0);
+        assertThat(result.get("words").asInt()).isZero();
     }
 
     @Test
@@ -99,7 +99,7 @@ public class JobHandlerTests {
                 }
                 """);
 
-        assertThat(result.get("words").asInt()).isEqualTo(0);
+        assertThat(result.get("words").asInt()).isZero();
     }
 
     @Test

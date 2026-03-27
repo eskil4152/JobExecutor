@@ -1,6 +1,5 @@
 package com.blikeng.job.executor.unitTests.handlerTests;
 
-import com.blikeng.job.executor.exception.InvalidPayloadException;
 import com.blikeng.job.executor.exception.MetadataException;
 import com.blikeng.job.executor.handler.MetadataHandler;
 import com.blikeng.job.executor.service.StorageService;
@@ -22,7 +21,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class MetadataHandlerTests {
+class MetadataHandlerTests {
     // ==========================
     // Tests for MetadataHandler. Verifies:
     // - Returns general metadata fields (name, size, extension, mimeType)

@@ -21,7 +21,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class FileAnalysisHandlerTests {
+class FileAnalysisHandlerTests {
     // ==========================
     // Tests for FileAnalysisHandler. Verifies:
     // - Returns correct word, line, character, and byte counts
@@ -75,10 +75,10 @@ public class FileAnalysisHandlerTests {
                 }
                 """);
 
-        assertThat(result.get("words").asInt()).isEqualTo(0);
-        assertThat(result.get("lines").asInt()).isEqualTo(0);
-        assertThat(result.get("characters").asInt()).isEqualTo(0);
-        assertThat(result.get("bytes").asInt()).isEqualTo(0);
+        assertThat(result.get("words").asInt()).isZero();
+        assertThat(result.get("lines").asInt()).isZero();
+        assertThat(result.get("characters").asInt()).isZero();
+        assertThat(result.get("bytes").asInt()).isZero();
     }
 
     @Test

@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class MetadataExtractorTests {
+class MetadataExtractorTests {
     // ==========================
     // Tests for metadata extractors. Verifies:
     // - GeneralMetadata reads file attributes
@@ -167,8 +167,9 @@ public class MetadataExtractorTests {
     @Test
     void shouldThrowMetadataExceptionForMissingFileOnGeneralMetadata() {
         Path nonExistent = tempDir.resolve("missing.txt");
+        ObjectNode node = node();
 
-        assertThatThrownBy(() -> GeneralMetadata.getGeneralData(nonExistent, node()))
+        assertThatThrownBy(() -> GeneralMetadata.getGeneralData(nonExistent, node))
                 .isInstanceOf(MetadataException.class);
     }
 
@@ -229,9 +230,11 @@ public class MetadataExtractorTests {
 
     @Test
     void shouldThrowMetadataExceptionForMissingFileOnTypeExtractor() {
+        ObjectNode node = node();
+
         Path nonExistent = tempDir.resolve("missing.bin");
 
-        assertThatThrownBy(() -> FileTypeExtractor.findFileType(nonExistent, node()))
+        assertThatThrownBy(() -> FileTypeExtractor.findFileType(nonExistent, node))
                 .isInstanceOf(MetadataException.class);
     }
 
@@ -274,9 +277,11 @@ public class MetadataExtractorTests {
 
     @Test
     void shouldThrowMetadataExceptionForMissingTextFile() {
+        ObjectNode node = node();
+
         Path nonExistent = tempDir.resolve("missing.txt");
 
-        assertThatThrownBy(() -> TextMetadataExtractor.extract(nonExistent, node()))
+        assertThatThrownBy(() -> TextMetadataExtractor.extract(nonExistent, node))
                 .isInstanceOf(MetadataException.class);
     }
 
@@ -298,9 +303,11 @@ public class MetadataExtractorTests {
 
     @Test
     void shouldThrowMetadataExceptionForMissingImageFile() {
+        ObjectNode node = node();
+
         Path nonExistent = tempDir.resolve("missing.png");
 
-        assertThatThrownBy(() -> ImageMetadataExtractor.extract(nonExistent, node()))
+        assertThatThrownBy(() -> ImageMetadataExtractor.extract(nonExistent, node))
                 .isInstanceOf(MetadataException.class);
     }
 
@@ -336,10 +343,12 @@ public class MetadataExtractorTests {
 
     @Test
     void shouldThrowMetadataExceptionForInvalidAudioFile() throws Exception {
+        ObjectNode node = node();
+
         Path file = tempDir.resolve("invalid.mp3");
         Files.write(file, "not audio data".getBytes());
 
-        assertThatThrownBy(() -> AudioMetadataExtractor.extract(file, node()))
+        assertThatThrownBy(() -> AudioMetadataExtractor.extract(file, node))
                 .isInstanceOf(MetadataException.class);
     }
 
@@ -366,31 +375,37 @@ public class MetadataExtractorTests {
     // ==========================
     @Test
     void shouldThrowMetadataExceptionWhenFfprobeFails() throws Exception {
+        ObjectNode node = node();
+
         Path file = tempDir.resolve("invalid.mp4");
         Files.write(file, "not a video".getBytes());
 
-        assertThatThrownBy(() -> VideoMetadataExtractor.extract(file, node()))
+        assertThatThrownBy(() -> VideoMetadataExtractor.extract(file, node))
                 .isInstanceOf(MetadataException.class);
     }
 
     @Test
     void shouldThrowMetadataExceptionOnIoException() throws Exception {
+        ObjectNode node = node();
+
         Path file = tempDir.resolve("dummy.mp4");
         Files.writeString(file, "data");
 
         assertThatThrownBy(() ->
-                VideoMetadataExtractor.extract(file, node(), "/nonexistent/path/ffprobe"))
+                VideoMetadataExtractor.extract(file, node, "/nonexistent/path/ffprobe"))
                 .isInstanceOf(MetadataException.class);
     }
 
     @Test
     void shouldThrowMetadataExceptionWhenFfprobeExitNonZero() throws Exception {
+        ObjectNode node = node();
+
         Path fakeProbe = writeFakeProbe("ffprobe-exit-1.sh", "exit 1");
         Path file = tempDir.resolve("dummy.mp4");
         Files.writeString(file, "data");
 
         assertThatThrownBy(() ->
-                VideoMetadataExtractor.extract(file, node(), fakeProbe.toString()))
+                VideoMetadataExtractor.extract(file, node, fakeProbe.toString()))
                 .isInstanceOf(MetadataException.class);
     }
 
