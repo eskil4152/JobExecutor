@@ -5,6 +5,15 @@ Clients submit jobs via a REST API and receive a job ID immediately. Jobs are ex
 
 ---
 
+## Badges
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=eskil4152_JobExecutor&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=eskil4152_JobExecutor)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=eskil4152_JobExecutor&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=eskil4152_JobExecutor)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=eskil4152_JobExecutor&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=eskil4152_JobExecutor)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=eskil4152_JobExecutor&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=eskil4152_JobExecutor)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=eskil4152_JobExecutor&metric=coverage)](https://sonarcloud.io/summary/new_code?id=eskil4152_JobExecutor)
+
+---
+
 ## Table of Contents
 
 - [Tech Stack](#tech-stack)
