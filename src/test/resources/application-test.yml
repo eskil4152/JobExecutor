@@ -16,5 +16,14 @@ spring:
     enabled: true
     baseline-on-migrate: true
 
+  servlet:
+    multipart:
+      max-file-size: ${MAX_FILE_SIZE:2GB}
+      max-request-size: ${MAX_REQUEST_SIZE:2GB}
+
+app:
+  max-expansion-ratio: ${MAX_EXPANSION_RATIO:100}
+  max-decompressed-size: ${MAX_DECOMPRESSED_SIZE:200MB}
+
 storage:
   path: ./target/test-uploads

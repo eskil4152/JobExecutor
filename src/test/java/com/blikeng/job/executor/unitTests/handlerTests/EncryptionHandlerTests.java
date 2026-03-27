@@ -8,6 +8,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tools.jackson.databind.JsonNode;
@@ -17,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -53,13 +56,13 @@ class EncryptionHandlerTests {
         encryptionHandler = new EncryptionHandler(objectMapper, storageService);
     }
 
-    private String validKey(int bytes) {
+    private static String validKey(int bytes) {
         byte[] keyBytes = new byte[bytes];
         new SecureRandom().nextBytes(keyBytes);
         return Base64.getEncoder().encodeToString(keyBytes);
     }
 
-    private String validAes256Key() { return validKey(32); }
+    private static String validAes256Key() { return validKey(32); }
 
     // ==========================
     // Handle Text Encryption
@@ -194,34 +197,12 @@ class EncryptionHandlerTests {
         assertThat(result.get("content").asString()).isEqualTo("secret message");
     }
 
-    @Test
-    void shouldThrowInvalidPayloadWhenContentIsNull() {
-        String key = validAes256Key();
-
-        assertThatThrownBy(() -> encryptionHandler.handleTextDecryption(
-                "{\"content\": null, \"iv\": \"aGVsbG8=\", \"key\": \"" + key + "\"}"))
-                .isInstanceOf(InvalidPayloadException.class);
-    }
-
-    @Test
-    void shouldThrowInvalidPayloadWhenIvIsNull() {
-        String key = validAes256Key();
-
-        assertThatThrownBy(() -> encryptionHandler.handleTextDecryption(
-                "{\"content\": \"aGVsbG8=\", \"iv\": null, \"key\": \"" + key + "\"}"))
-                .isInstanceOf(InvalidPayloadException.class);
-    }
-
-    @Test
-    void shouldThrowInvalidPayloadWhenKeyIsNull() {
-        assertThatThrownBy(() -> encryptionHandler.handleTextDecryption("""
-                {
-                  "content": "aGVsbG8=",
-                  "iv": "aGVsbG8=",
-                  "key": null
-                }
-                """))
-                .isInstanceOf(InvalidPayloadException.class);
+    @ParameterizedTest(name = "{index} → {0}")
+    @MethodSource("invalidDecryptionPayloads")
+    void shouldThrowInvalidPayloadForInvalidInputs(String payload) {
+        assertThatThrownBy(() ->
+                encryptionHandler.handleTextDecryption(payload)
+        ).isInstanceOf(InvalidPayloadException.class);
     }
 
     @Test
@@ -238,15 +219,6 @@ class EncryptionHandlerTests {
         assertThatThrownBy(() -> encryptionHandler.handleTextDecryption(
                 "{\"content\": \"" + cipherText + "\", \"iv\": \"" + iv + "\", \"key\": \"" + keyB + "\"}"))
                 .isInstanceOf(FileProcessingException.class);
-    }
-
-    @Test
-    void shouldThrowInvalidPayloadForInvalidBase64CipherText() {
-        String key = validAes256Key();
-
-        assertThatThrownBy(() -> encryptionHandler.handleTextDecryption(
-                "{\"content\": \"not-base64!!!\", \"iv\": \"aGVsbG8=\", \"key\": \"" + key + "\"}"))
-                .isInstanceOf(InvalidPayloadException.class);
     }
 
     @Test
@@ -404,5 +376,22 @@ class EncryptionHandlerTests {
         assertThatThrownBy(() -> encryptionHandler.handleFileDecryption(
                 "{\"fileId\": \"enc-id\", \"iv\": \"" + iv + "\", \"key\": \"" + key + "\"}"))
                 .isInstanceOf(FileProcessingException.class);
+    }
+
+    private static Stream<String> invalidDecryptionPayloads() {
+        String key = validAes256Key();
+
+        return Stream.of(
+                "{\"content\": null, \"iv\": \"aGVsbG8=\", \"key\": \"" + key + "\"}",
+                "{\"content\": \"aGVsbG8=\", \"iv\": null, \"key\": \"" + key + "\"}",
+                "{\"content\": \"not-base64!!!\", \"iv\": \"aGVsbG8=\", \"key\": \"" + key + "\"}",
+                """
+                {
+                  "content": "aGVsbG8=",
+                  "iv": "aGVsbG8=",
+                  "key": null
+                }
+                """
+        );
     }
 }

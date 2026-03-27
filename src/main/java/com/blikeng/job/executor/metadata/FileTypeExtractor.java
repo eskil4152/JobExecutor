@@ -21,7 +21,7 @@ public class FileTypeExtractor {
         /* This utility class should not be instantiated */
     }
 
-    private final static Logger logger = LoggerFactory.getLogger(FileTypeExtractor.class);
+    private static final Logger logger = LoggerFactory.getLogger(FileTypeExtractor.class);
 
     public static void findFileType(Path path, ObjectNode result) {
         Tika tika = new Tika();

@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.unit.DataSize;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -51,6 +53,8 @@ class CompressionHandlerTests {
     @BeforeEach
     void setUp() {
         compressionHandler = new CompressionHandler(objectMapper, storageService);
+        ReflectionTestUtils.setField(compressionHandler, "maxDecompressedSize", DataSize.ofGigabytes(2));
+        ReflectionTestUtils.setField(compressionHandler, "maxExpansionRatio", 100);
     }
 
     // ==========================

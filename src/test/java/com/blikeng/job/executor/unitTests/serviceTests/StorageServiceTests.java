@@ -8,6 +8,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -15,10 +16,10 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class StorageServiceTests {
     // ==========================
     // Tests for StorageService. Verifies:
@@ -58,7 +59,7 @@ class StorageServiceTests {
         String id = storageService.store(file);
 
         byte[] content = storageService.getFile(id).getInputStream().readAllBytes();
-        assertEquals("Hello, world!".getBytes(), content);
+        assertArrayEquals("Hello, world!".getBytes(), content);
     }
 
     // ==========================
