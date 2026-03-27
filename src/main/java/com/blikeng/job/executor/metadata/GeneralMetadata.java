@@ -11,6 +11,11 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFileAttributes;
 
 public class GeneralMetadata {
+
+    private GeneralMetadata(){
+        /* This utility class should not be instantiated */
+    }
+
     public static void getGeneralData(Path path, ObjectNode current) {
         BasicFileAttributes attributes;
         PosixFileAttributes posixAttributes;

@@ -6,6 +6,7 @@ import com.blikeng.job.executor.exception.InvalidPayloadException;
 import com.blikeng.job.executor.exception.messages.InternalMessages;
 import com.blikeng.job.executor.payloads.DecryptionPayload;
 import com.blikeng.job.executor.payloads.EncryptionPayload;
+import com.blikeng.job.executor.payloads.EncryptionResultPayload;
 import com.blikeng.job.executor.service.StorageService;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
@@ -29,8 +30,10 @@ public class EncryptionHandler extends BaseHandler {
     public EncryptionHandler(ObjectMapper objectMapper, StorageService storageService) {
         super(objectMapper, storageService);
     }
+
+    private final SecureRandom random = new SecureRandom();
     
-    private final String AES_GCM_NO_PADDING = "AES/GCM/NoPadding";
+    private static final String AES_GCM_NO_PADDING = "AES/GCM/NoPadding";
 
     public JsonNode handleFileEncryption(String payloadString) {
         EncryptionPayload payload = parsePayload(payloadString, EncryptionPayload.class, "File Encryption");
@@ -39,7 +42,7 @@ public class EncryptionHandler extends BaseHandler {
 
         try {
             byte[] plainText = Files.readAllBytes(path);
-            EncryptionData data = encrypt(plainText, payload.key());
+            EncryptionResultPayload data = encrypt(plainText, payload.key());
 
             Path outputPath = path.resolveSibling(path.getFileName() + ".enc");
             Files.write(outputPath, data.cipherBytes());
@@ -88,7 +91,7 @@ public class EncryptionHandler extends BaseHandler {
         }
 
         byte[] plainText = content.getBytes(StandardCharsets.UTF_8);
-        EncryptionData data = encrypt(plainText, payload.key());
+        EncryptionResultPayload data = encrypt(plainText, payload.key());
 
         return objectMapper.createObjectNode()
                 .put("algorithm", data.algorithm())
@@ -113,7 +116,7 @@ public class EncryptionHandler extends BaseHandler {
                 .put("content", text);
     }
 
-    private EncryptionData encrypt(byte[] plainText, String base64Key) {
+    private EncryptionResultPayload encrypt(byte[] plainText, String base64Key) {
         byte[] keyBytes = resolveAesKey(base64Key);
         SecretKey key = new SecretKeySpec(keyBytes, "AES");
 
@@ -126,7 +129,7 @@ public class EncryptionHandler extends BaseHandler {
 
             byte[] cipherBytes = cipher.doFinal(plainText);
 
-            return new EncryptionData(
+            return new EncryptionResultPayload(
                     AES_GCM_NO_PADDING,
                     cipherBytes,
                     Base64.getEncoder().encodeToString(iv),
@@ -208,7 +211,7 @@ public class EncryptionHandler extends BaseHandler {
 
     private byte[] generateRandomBytes(int length) {
         byte[] bytes = new byte[length];
-        new SecureRandom().nextBytes(bytes);
+        random.nextBytes(bytes);
         return bytes;
     }
 
@@ -219,11 +222,4 @@ public class EncryptionHandler extends BaseHandler {
             throw new InvalidPayloadException(InternalMessages.INVALID_BASE64.getMessage(), "EncryptionHandler.decodeBase64: " + field, e);
         }
     }
-
-    private record EncryptionData(
-            String algorithm,
-            byte[] cipherBytes,
-            String iv,
-            String key
-    ) {}
 }

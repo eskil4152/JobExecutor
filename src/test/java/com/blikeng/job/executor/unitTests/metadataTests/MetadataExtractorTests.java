@@ -400,12 +400,12 @@ class MetadataExtractorTests {
     void shouldThrowMetadataExceptionWhenFfprobeExitNonZero() throws Exception {
         ObjectNode node = node();
 
-        Path fakeProbe = writeFakeProbe("ffprobe-exit-1.sh", "exit 1");
+        String fakeProbe = writeFakeProbe("ffprobe-exit-1.sh", "exit 1").toString();
         Path file = tempDir.resolve("dummy.mp4");
         Files.writeString(file, "data");
 
         assertThatThrownBy(() ->
-                VideoMetadataExtractor.extract(file, node, fakeProbe.toString()))
+                VideoMetadataExtractor.extract(file, node, fakeProbe))
                 .isInstanceOf(MetadataException.class);
     }
 

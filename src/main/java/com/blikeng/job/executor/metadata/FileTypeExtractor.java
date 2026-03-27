@@ -8,12 +8,20 @@ import com.blikeng.job.executor.metadata.image.ImageMetadataExtractor;
 import com.blikeng.job.executor.metadata.text.TextMetadataExtractor;
 import com.blikeng.job.executor.metadata.video.VideoMetadataExtractor;
 import org.apache.tika.Tika;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
 public class FileTypeExtractor {
+
+    private FileTypeExtractor(){
+        /* This utility class should not be instantiated */
+    }
+
+    private final static Logger logger = LoggerFactory.getLogger(FileTypeExtractor.class);
 
     public static void findFileType(Path path, ObjectNode result) {
         Tika tika = new Tika();
@@ -34,7 +42,7 @@ public class FileTypeExtractor {
             case "image" -> ImageMetadataExtractor.extract(path, result);
             case "video" -> VideoMetadataExtractor.extract(path, result);
             case "audio" -> AudioMetadataExtractor.extract(path, result);
-            default -> {}
+            default -> logger.warn("Unsupported file type: {}", fileType);
         }
     }
 }

@@ -60,8 +60,6 @@ class JobIntegrationTests {
 
     @Test
     void shouldCreateAndGetFailedJobWhenWrongPayload() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-
         ObjectNode payload = objectMapper.createObjectNode();
         payload.put("a", 1);
 
@@ -94,8 +92,6 @@ class JobIntegrationTests {
 
     @Test
     void shouldReturnBadRequestForMalformedRequest() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-
         ObjectNode payload = objectMapper.createObjectNode();
         payload.put("a", 1);
         payload.put("b", 2);
@@ -118,8 +114,6 @@ class JobIntegrationTests {
 
         MessageDigest digest = MessageDigest.getInstance(algorithm);
         String expectedHash = HexFormat.of().formatHex(digest.digest(input.getBytes(StandardCharsets.UTF_8)));
-
-        ObjectMapper objectMapper = new ObjectMapper();
 
         ObjectNode payload = objectMapper.createObjectNode();
         payload.put("content", input);

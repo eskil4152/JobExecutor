@@ -49,7 +49,7 @@ public class JobService {
             workerManager.submitTask(new JobTask(job.getId(), jobExecutionService));
 
             return job.getId();
-        } catch (JacksonException e) {
+        } catch (JacksonException _) {
             throw new ApiException(ApiMessages.JOB_CREATION_FAILED.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
