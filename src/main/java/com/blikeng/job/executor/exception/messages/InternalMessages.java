@@ -9,6 +9,7 @@ public enum InternalMessages {
     ENCRYPTION_FAILED("Encryption failed"),
     FAILED_TO_COMPRESS("Failed compression"),
     FAILED_TO_DECOMPRESS("Failed decompression"),
+    DECOMPRESSION_SIZE_LIMIT_EXCEEDED("Decompression size limit exceeded"),
     FAILED_TO_DETECT_FILE_TYPE("Failed to detect file type"),
     FAILED_TO_PARSE_TEXT_METADATA("Failed to parse text metadata"),
     FAILED_TO_READ_AUDIO_FILE("Failed to read audio file"),

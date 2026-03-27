@@ -61,34 +61,6 @@ public class CompressionHandler extends BaseHandler {
         }
     }
 
-    public JsonNode handleFileDecompression(String payloadString) {
-        FilePayload payload = parsePayload(payloadString, FilePayload.class, "File Decompression");
-        Path zipPath = getFilePath(payload.fileId(), "File Decompression");
-
-        try (
-                ZipInputStream zipIn = new ZipInputStream(Files.newInputStream(zipPath));
-        ) {
-            ZipEntry zipEntry = zipIn.getNextEntry();
-            Path outputPath = resolveSafeZipOutputPath(zipPath, zipEntry);
-
-            long compressedSize = Files.size(zipPath);
-
-            try (OutputStream out = Files.newOutputStream(outputPath)) {
-                copyWithLimits(zipIn, out, compressedSize);
-            }
-
-            zipIn.closeEntry();
-
-            if (zipIn.getNextEntry() != null) throw new FileProcessingException(InternalMessages.ZIP_FILE_CONTAINS_MULTIPLE_ENTRIES.getMessage(), "CompressionHandler.handleFileDeompression", null);
-
-            return objectMapper.createObjectNode()
-                    .put("decompressed_file", outputPath.getFileName().toString());
-
-        } catch (IOException e) {
-            throw new FileProcessingException(InternalMessages.FAILED_TO_DECOMPRESS.getMessage(), "CompressionHandler.handleFileDeompression", e);
-        }
-    }
-
     public JsonNode handleTextCompression(String payloadString) {
         TextPayload payload = parsePayload(payloadString, TextPayload.class, "Text Compression");
 
@@ -97,8 +69,8 @@ public class CompressionHandler extends BaseHandler {
         }
 
         try (
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            ZipOutputStream zipOut = new ZipOutputStream(out);
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                ZipOutputStream zipOut = new ZipOutputStream(out)
         ){
             ZipEntry entry = new ZipEntry("text.txt");
             zipOut.putNextEntry(entry);
@@ -118,34 +90,68 @@ public class CompressionHandler extends BaseHandler {
         }
     }
 
+    public JsonNode handleFileDecompression(String payloadString) {
+        FilePayload payload = parsePayload(payloadString, FilePayload.class, "File Decompression");
+        Path zipPath = getFilePath(payload.fileId(), "File Decompression");
+
+        try (ZipInputStream zipIn = new ZipInputStream(Files.newInputStream(zipPath))) {
+            ZipEntry zipEntry = getValidatedZipEntry(zipIn, "CompressionHandler.handleFileDecompression");
+            Path outputPath = resolveSafeZipOutputPath(zipPath, zipEntry);
+
+            long compressedSize = Files.size(zipPath);
+
+            try (OutputStream out = Files.newOutputStream(outputPath)) {
+                copyWithLimits(zipIn, out, compressedSize);
+            }
+
+            zipIn.closeEntry();
+            ensureSingleEntry(zipIn, "CompressionHandler.handleFileDecompression");
+
+            return objectMapper.createObjectNode()
+                    .put("decompressed_file", outputPath.getFileName().toString());
+
+        } catch (IOException e) {
+            throw new FileProcessingException(
+                    InternalMessages.FAILED_TO_DECOMPRESS.getMessage(),
+                    "CompressionHandler.handleFileDecompression",
+                    e
+            );
+        }
+    }
+
     public JsonNode handleTextDecompression(String payloadString) {
         TextPayload payload = parsePayload(payloadString, TextPayload.class, "Text Decompression");
 
         if (payload.content() == null) {
-            throw new InvalidPayloadException(InternalMessages.INVALID_COMPRESSED_TEXT.getMessage(), "CompressionHandler.handleTextDecompression", null);
+            throw new InvalidPayloadException(
+                    InternalMessages.INVALID_COMPRESSED_TEXT.getMessage(),
+                    "CompressionHandler.handleTextDecompression",
+                    null
+            );
         }
 
         byte[] compressed;
-
         try {
             compressed = Base64.getDecoder().decode(payload.content());
         } catch (IllegalArgumentException e) {
-            throw new InvalidPayloadException(InternalMessages.INVALID_BASE64.getMessage(), "CompressionHandler.handleTextDecompression", e);
+            throw new InvalidPayloadException(
+                    InternalMessages.INVALID_BASE64.getMessage(),
+                    "CompressionHandler.handleTextDecompression",
+                    e
+            );
         }
 
         try (
-            ByteArrayInputStream byteIn = new ByteArrayInputStream(compressed);
-            ZipInputStream zipIn = new ZipInputStream(byteIn)
+                ByteArrayInputStream byteIn = new ByteArrayInputStream(compressed);
+                ZipInputStream zipIn = new ZipInputStream(byteIn);
+                ByteArrayOutputStream out = new ByteArrayOutputStream()
         ) {
-            ZipEntry entry = zipIn.getNextEntry();
-            if (entry == null) {
-                throw new FileProcessingException(InternalMessages.ZIP_IS_EMPTY.getMessage(), "CompressionHandler.handleTextDecompression", null);
-            }
+            getValidatedZipEntry(zipIn, "CompressionHandler.handleTextDecompression");
 
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            copy(zipIn, out);
+            copyWithLimits(zipIn, out, compressed.length);
 
             zipIn.closeEntry();
+            ensureSingleEntry(zipIn, "CompressionHandler.handleTextDecompression");
 
             String result = out.toString(StandardCharsets.UTF_8);
 
@@ -153,27 +159,15 @@ public class CompressionHandler extends BaseHandler {
                     .put("text", result);
 
         } catch (IOException e) {
-            throw new FileProcessingException(InternalMessages.FAILED_TO_DECOMPRESS.getMessage(), "CompressionHandler.handleTextDecompression", e);
+            throw new FileProcessingException(
+                    InternalMessages.FAILED_TO_DECOMPRESS.getMessage(),
+                    "CompressionHandler.handleTextDecompression",
+                    e
+            );
         }
     }
 
     private Path resolveSafeZipOutputPath(Path zipPath, ZipEntry zipEntry) {
-        if (zipEntry == null) {
-            throw new FileProcessingException(
-                    InternalMessages.ZIP_IS_EMPTY.getMessage(),
-                    "CompressionHandler.resolveSafeZipOutputPath",
-                    null
-            );
-        }
-
-        if (zipEntry.isDirectory()) {
-            throw new FileProcessingException(
-                    InternalMessages.ZIP_ENTRY_IS_DIRECTORY.getMessage(),
-                    "CompressionHandler.resolveSafeZipOutputPath",
-                    null
-            );
-        }
-
         Path targetDir = zipPath.getParent();
         if (targetDir == null) {
             throw new FileProcessingException(
@@ -183,6 +177,10 @@ public class CompressionHandler extends BaseHandler {
             );
         }
 
+        return getOutputPath(zipEntry, targetDir);
+    }
+
+    private static Path getOutputPath(ZipEntry zipEntry, Path targetDir) {
         Path outputPath = targetDir.resolve(zipEntry.getName()).normalize();
 
         if (!outputPath.startsWith(targetDir)) {
@@ -200,13 +198,12 @@ public class CompressionHandler extends BaseHandler {
                     null
             );
         }
-
         return outputPath;
     }
 
     private void copy(InputStream in, OutputStream out) {
         try {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[4096];
             int length;
             while ((length = in.read(buffer)) != -1) {
                 out.write(buffer, 0, length);
@@ -217,33 +214,59 @@ public class CompressionHandler extends BaseHandler {
     }
 
     private void copyWithLimits(InputStream in, OutputStream out, long compressedSize) throws IOException {
-        byte[] buffer = new byte[8192];
+        byte[] buffer = new byte[4096];
         long totalWritten = 0;
         int read;
 
-        long maxBytes = maxDecompressedSize.toBytes(); // <-- fix
-
-        long maxByRatio;
-        if (compressedSize <= 0) {
-            maxByRatio = maxBytes;
-        } else {
-            maxByRatio = compressedSize * maxExpansionRatio;
-        }
-
-        long allowedMax = Math.min(maxBytes, maxByRatio);
+        long maxBytes = maxDecompressedSize.toBytes();
+        long allowedMax = (compressedSize <= 0)
+                ? maxBytes
+                : Math.min(maxBytes, compressedSize * (long) maxExpansionRatio);
 
         while ((read = in.read(buffer)) != -1) {
             totalWritten += read;
 
             if (totalWritten > allowedMax) {
                 throw new FileProcessingException(
-                        InternalMessages.FAILED_TO_DECOMPRESS.getMessage(),
+                        InternalMessages.DECOMPRESSION_SIZE_LIMIT_EXCEEDED.getMessage(),
                         "CompressionHandler.copyWithLimits",
                         null
                 );
             }
 
             out.write(buffer, 0, read);
+        }
+    }
+
+    private ZipEntry getValidatedZipEntry(ZipInputStream zipIn, String location) throws IOException {
+        ZipEntry zipEntry = zipIn.getNextEntry();
+
+        if (zipEntry == null) {
+            throw new FileProcessingException(
+                    InternalMessages.ZIP_IS_EMPTY.getMessage(),
+                    location,
+                    null
+            );
+        }
+
+        if (zipEntry.isDirectory()) {
+            throw new FileProcessingException(
+                    InternalMessages.ZIP_ENTRY_IS_DIRECTORY.getMessage(),
+                    location,
+                    null
+            );
+        }
+
+        return zipEntry;
+    }
+
+    private void ensureSingleEntry(ZipInputStream zipIn, String location) throws IOException {
+        if (zipIn.getNextEntry() != null) {
+            throw new FileProcessingException(
+                    InternalMessages.ZIP_FILE_CONTAINS_MULTIPLE_ENTRIES.getMessage(),
+                    location,
+                    null
+            );
         }
     }
 }
