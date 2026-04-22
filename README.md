@@ -82,7 +82,7 @@ Jobs are accepted immediately and processed asynchronously. Job execution never 
 ### Job Lifecycle
 
 - On submission, a job is persisted to PostgreSQL with status `QUEUED` and a UUID is returned to the caller.
-- The job is immediately dispatched to a fixed-size thread pool of **2 workers**.
+- The job is immediately dispatched to a fixed-size thread pool of **2 workers** (configurable via application.properties)
 - When a worker picks up the job, status transitions to `RUNNING` and a start timestamp is recorded.
 - On completion, the result is serialized to JSON and saved alongside the job. Status becomes `COMPLETED`.
 - On failure, a descriptive error message is saved as the result and status becomes `FAILED`.
@@ -226,34 +226,6 @@ The response is a UUID string. Poll `GET /api/job/{id}` for status and result.
 
 ---
 
-### `ADD_NUMBERS`
-Adds two integers.
-
-Payload:
-```json
-{ "a": 10, "b": 32 }
-```
-Result:
-```json
-{ "sum": 42 }
-```
-
----
-
-### `COUNT_WORDS`
-Counts whitespace-separated words in a string.
-
-Payload:
-```json
-{ "content": "Hello world" }
-```
-Result:
-```json
-{ "words": 2 }
-```
-
----
-
 ### `ANALYZE_FILE`
 Counts words, lines, characters, and bytes in a text file.
 
@@ -378,7 +350,7 @@ Result:
 ---
 
 ### `ENCRYPT_TEXT`
-Encrypts a plaintext string with AES-256-GCM. `key` is optional — omit having one generated.
+Encrypts a plaintext string with AES-256-GCM. `key` is optional — omit to have one generated.
 
 Payload:
 ```json
